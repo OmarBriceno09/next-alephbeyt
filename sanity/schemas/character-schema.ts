@@ -1,3 +1,5 @@
+import { Rule } from '@sanity/types';
+
 const character = {
     name: 'character',
     title: 'Character',
@@ -25,9 +27,10 @@ const character = {
             title: 'Color',
             type: 'string',
             description: 'Hex color code like#fcd97d',
-            validation: Rule => Rule.regex(/^#([0-9a-fA-F]{3}){1,2}$/, {
-                name: 'hex color',
-                invert: false,
+            validation: (Rule:Rule) => 
+                Rule.regex(/^#([0-9a-fA-F]{3}){1,2}$/, {
+                    name: 'hex color',
+                    invert: false,
               }),
         },
         {
