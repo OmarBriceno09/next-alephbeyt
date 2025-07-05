@@ -14,7 +14,6 @@ export default function CharacterGrid({ characters }: { characters: Character[] 
     const rows = [row1, row2, row3];
 
     const cubeRefs = useRef<HTMLDivElement[]>([]);
-    const containerRef = useRef<HTMLButtonElement>(null);
 
     useLayoutEffect(() => {
         cubeRefs.current.forEach((cube, i) => {
