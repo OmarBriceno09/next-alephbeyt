@@ -6,6 +6,7 @@ export type Character = {
     letter_name: string;
     slug: string;
     order_index: Int16Array;
+    char_color: string;
     modern_char: string;
     latin_char: string;
     transliteral: string;
