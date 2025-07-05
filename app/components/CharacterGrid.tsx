@@ -4,7 +4,6 @@ import { useState, useRef, useLayoutEffect } from 'react';
 import gsap from "gsap";
 import CharacterModal from './CharacterModal';
 import { Character } from '@/types/Character';
-import Image from 'next/image';
 
 export default function CharacterGrid({ characters }: { characters: Character[] }) {
     const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
@@ -76,7 +75,7 @@ export default function CharacterGrid({ characters }: { characters: Character[] 
                                 style={{ backgroundColor: character.char_color || "#f5f5f5" }}
                             >
                             {character.modern_char?.asset?.url && (
-                                <Image
+                                <img
                                 src={character.modern_char.asset.url}
                                 alt={character.letter_name}
                                 className="w-3/5 h-3/5 object-contain"
@@ -88,7 +87,7 @@ export default function CharacterGrid({ characters }: { characters: Character[] 
                             </div>
                             <div className="face back" style={{ backgroundColor: character.char_color || "#f5f5f5" }}>
                                 {character.modern_char?.asset?.url && (
-                                    <Image
+                                    <img
                                     src={character.modern_char.asset.url}
                                     alt={character.letter_name}
                                     className="w-3/5 h-3/5 object-contain"
@@ -97,7 +96,7 @@ export default function CharacterGrid({ characters }: { characters: Character[] 
                             </div>
                             <div className="face left" style={{ backgroundColor: character.char_color || "#f5f5f5" }}>
                                 {character.modern_char?.asset?.url && (
-                                    <Image
+                                    <img
                                     src={character.modern_char.asset.url}
                                     alt={character.letter_name}
                                     className="w-3/5 h-3/5 object-contain"
@@ -106,7 +105,7 @@ export default function CharacterGrid({ characters }: { characters: Character[] 
                             </div>
                             <div className="face right" style={{ backgroundColor: character.char_color || "#f5f5f5" }}>
                                 {character.modern_char?.asset?.url && (
-                                    <Image
+                                    <img
                                     src={character.modern_char.asset.url}
                                     alt={character.letter_name}
                                     className="w-3/5 h-3/5 object-contain"
@@ -115,7 +114,7 @@ export default function CharacterGrid({ characters }: { characters: Character[] 
                             </div>
                             <div className="face top" style={{ backgroundColor: character.char_color || "#f5f5f5" }}>
                                 {character.modern_char?.asset?.url && (
-                                    <Image
+                                    <img
                                     src={character.modern_char.asset.url}
                                     alt={character.letter_name}
                                     className="w-3/5 h-3/5 object-contain"
@@ -124,7 +123,7 @@ export default function CharacterGrid({ characters }: { characters: Character[] 
                             </div>
                             <div className="face bottom" style={{ backgroundColor: character.char_color || "#f5f5f5" }}>
                                 {character.modern_char?.asset?.url && (
-                                    <Image
+                                    <img
                                     src={character.modern_char.asset.url}
                                     alt={character.letter_name}
                                     className="w-3/5 h-3/5 object-contain"
