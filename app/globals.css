@@ -86,3 +86,81 @@ body {
   transform: rotateX(-90deg) translateZ(var(--half-cube-size));
   filter: brightness(var(--back-face)); 
 }
+
+.glyph-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  font-size: 4rem;
+  height: 6rem;
+}
+@font-face {
+  font-family: 'Noto Egyptian';
+  src: url('/fonts/NotoSansEgyptianHieroglyphs-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+    font-family: 'Noto Sans Phoenician';
+    src: url('/fonts/NotoSansPhoenician-Regular.woff2') format('woff2');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+@font-face {
+  font-family: 'Noto Sans Ugaritic';
+  src: url('/fonts/NotoSansUgaritic-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Noto Sans Old South Arabian';
+  src: url('/fonts/NotoSansOldSouthArabian-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Noto Sans Old North Arabian';
+  src: url('/fonts/NotoSansOldNorthArabian-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Noto Sans Ethiopic';
+  src: url('/fonts/NotoSansEthiopic-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Noto Sans Samaritan';
+  src: url('/fonts/NotoSansSamaritan-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Noto Sans Old';
+  src: url('/fonts/NotoSansOldItalic-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Noto Sans Hebrew';
+  src: url('/fonts/NotoSansHebrew-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+.glyph {
+  display: inline-block;
+  font-family: 'Noto Egyptian', sans-serif;
+  line-height: 1;
+  transform: translateY(8%);
+}

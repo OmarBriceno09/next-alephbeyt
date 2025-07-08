@@ -1,19 +1,56 @@
 "use client";
 
-import { useState, useRef, useLayoutEffect } from 'react';
+import { useEffect, useState, useRef, useLayoutEffect } from 'react';
 import gsap from "gsap";
 import CharacterModal from './CharacterModal';
 import { Character } from '@/types/Character';
+import Papa from 'papaparse';
+
+//type CharacterRow for switching fonts/scripts ***remove later***
+type CharacterRow = {
+    letter_name: string;
+    script_title: string;
+    font_title: string;
+    char: string;
+}
 
 export default function CharacterGrid({ characters }: { characters: Character[] }) {
     const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
+
+    //*----------------------------------------------------------------- */
+    //FontSwitcher var declarations
+    const [data, setData] = useState<CharacterRow[]>([]);
+    const [selectedScript, setSelectedScript] = useState<string | null>(null);
+
+    useEffect(() => {
+        fetch('/data/AlephBeytDatabase.csv')
+            .then(res => res.text())
+            .then(csv => {
+            const parsed = Papa.parse<CharacterRow>(csv, {
+                header: true,
+                skipEmptyLines: true,
+            });
+            setData(parsed.data);
+        });
+    }, []);
+
+    const fontOptions = Array.from(new Set(data.map(row => row.script_title)));
+
+    // Filter data by selected font
+    const filteredChars  = selectedScript
+    ? data.filter(row => row.script_title === selectedScript)
+    : data;
+    //*----------------------------------------------------------------- */
   
+    //splitting characters from groq... might remove later to just stick with csv
     const row1 = characters.slice(0, 7);
     const row2 = characters.slice(7, 15);
     const row3 = characters.slice(15, 22);
     const rows = [row1, row2, row3];
 
     const cubeRefs = useRef<HTMLDivElement[]>([]);
+
+
 
     useLayoutEffect(() => {
         cubeRefs.current.forEach((cube, i) => {
@@ -51,92 +88,126 @@ export default function CharacterGrid({ characters }: { characters: Character[] 
 
     let overallIndex = 0;
     return (
-        <div className="flex flex-col [gap:clamp(1.5rem,2.75vw,4rem)]">
-            {rows.map((row, i) => (
-                <div 
-                    key={i}
-                    className="flex justify-center [gap:clamp(1.5rem,2.75vw,4rem)]"
+        <div>
+            <div className="p-4">
+                {/* Font Dropdown */}
+                <label className="block mb-2 font-semibold text-lg">Select a Font Style:</label>
+                <select
+                    onChange={(e) => setSelectedScript(e.target.value)}
+                    value={selectedScript || ''}
+                    className="p-2 border rounded mb-6"
                 >
-                {row.map((character) => (
-                    <div 
-                        ref = {(el) => {
-                            if (el) cubeRefs.current[overallIndex] = el;
-                            overallIndex += 1;
+                    <option value="" disabled>Select a font</option>
+                    {fontOptions.map((font, idx) => (
+                    <option key={idx} value={font}>
+                        {font}
+                    </option>
+                    ))}
+                </select>
+
+                {/* Characters for Selected Font */}
+                <div className="border p-4 min-h-[200px] text-4xl font-extrabold text-center">
+                    {selectedScript && filteredChars.length > 0 ? (
+                    filteredChars.map((row, i) => (
+                        <span
+                        key={i}
+                        style={{ 
+                            fontFamily: row.font_title, 
+                            margin: '0 0.5rem',
+                            display: 'inline-block',
                         }}
-                        key={`cube-${character._id}`} 
-                        className="cube perspective cursor-pointer" 
-                        onClick={() => setSelectedCharacter(character)}
-                        onMouseEnter={(e) => handleMouseEnter(e.currentTarget)}
-                        onMouseLeave={(e) => handleMouseLeave(e.currentTarget)}
+                        >
+                        {row.char}
+                        </span>
+                    ))
+                    ) : (
+                    <p>Select a font to see its characters.</p>
+                    )}
+                </div>
+            </div>
+            <div className="flex flex-col [gap:clamp(1.5rem,2.75vw,4rem)]">
+                {rows.map((row, i) => (
+                    <div 
+                        key={i}
+                        className="flex justify-center [gap:clamp(1.5rem,2.75vw,4rem)]"
                     >
-                        <div className="cube-inner">
-                            <div 
-                                className="face front" 
-                                style={{ backgroundColor: character.char_color || "#f5f5f5" }}
-                            >
-                            {character.modern_char?.asset?.url && (
-                                <img
-                                src={character.modern_char.asset.url}
-                                alt={character.letter_name}
-                                className="w-3/5 h-3/5 object-contain"
-                                />
-                            )}
-                            <span className="text-[1.5vw] sm:text-sm mt-1 text-center">
-                                {character.latin_char}
-                            </span>
-                            </div>
-                            <div className="face back" style={{ backgroundColor: character.char_color || "#f5f5f5" }}>
-                                {character.modern_char?.asset?.url && (
-                                    <img
-                                    src={character.modern_char.asset.url}
-                                    alt={character.letter_name}
-                                    className="w-3/5 h-3/5 object-contain"
-                                    />
-                                )}
-                            </div>
-                            <div className="face left" style={{ backgroundColor: character.char_color || "#f5f5f5" }}>
-                                {character.modern_char?.asset?.url && (
-                                    <img
-                                    src={character.modern_char.asset.url}
-                                    alt={character.letter_name}
-                                    className="w-3/5 h-3/5 object-contain"
-                                    />
-                                )}
-                            </div>
-                            <div className="face right" style={{ backgroundColor: character.char_color || "#f5f5f5" }}>
-                                {character.modern_char?.asset?.url && (
-                                    <img
-                                    src={character.modern_char.asset.url}
-                                    alt={character.letter_name}
-                                    className="w-3/5 h-3/5 object-contain"
-                                    />
-                                )}
-                            </div>
-                            <div className="face top" style={{ backgroundColor: character.char_color || "#f5f5f5" }}>
-                                {character.modern_char?.asset?.url && (
-                                    <img
-                                    src={character.modern_char.asset.url}
-                                    alt={character.letter_name}
-                                    className="w-3/5 h-3/5 object-contain"
-                                    />
-                                )}
-                            </div>
-                            <div className="face bottom" style={{ backgroundColor: character.char_color || "#f5f5f5" }}>
-                                {character.modern_char?.asset?.url && (
-                                    <img
-                                    src={character.modern_char.asset.url}
-                                    alt={character.letter_name}
-                                    className="w-3/5 h-3/5 object-contain"
-                                    />
-                                )}
+                    {row.map((character) => (
+                        <div 
+                            ref = {(el) => {
+                                if (el) cubeRefs.current[overallIndex] = el;
+                                overallIndex += 1;
+                            }}
+                            key={`cube-${character._id}`} 
+                            className="cube perspective cursor-pointer" 
+                            onClick={() => setSelectedCharacter(character)}
+                            onMouseEnter={(e) => handleMouseEnter(e.currentTarget)}
+                            onMouseLeave={(e) => handleMouseLeave(e.currentTarget)}
+                        >
+                            <div className="cube-inner">
+                                <div 
+                                    className="face front" 
+                                    style={{ backgroundColor: character.char_color || "#f5f5f5" }}
+                                >
+                                <h1 className="glyph-container">
+                                    <span className="glyph">𓆟</span>
+                                </h1>
+                                <span className="text-[1.5vw] sm:text-sm mt-1 text-center">
+                                    {character.letter_name}
+                                </span>
+                                </div>
+                                <div className="face back" style={{ backgroundColor: character.char_color || "#f5f5f5" }}>
+                                    {character.modern_char?.asset?.url && (
+                                        <img
+                                        src={character.modern_char.asset.url}
+                                        alt={character.letter_name}
+                                        className="w-3/5 h-3/5 object-contain"
+                                        />
+                                    )}
+                                </div>
+                                <div className="face left" style={{ backgroundColor: character.char_color || "#f5f5f5" }}>
+                                    {character.modern_char?.asset?.url && (
+                                        <img
+                                        src={character.modern_char.asset.url}
+                                        alt={character.letter_name}
+                                        className="w-3/5 h-3/5 object-contain"
+                                        />
+                                    )}
+                                </div>
+                                <div className="face right" style={{ backgroundColor: character.char_color || "#f5f5f5" }}>
+                                    {character.modern_char?.asset?.url && (
+                                        <img
+                                        src={character.modern_char.asset.url}
+                                        alt={character.letter_name}
+                                        className="w-3/5 h-3/5 object-contain"
+                                        />
+                                    )}
+                                </div>
+                                <div className="face top" style={{ backgroundColor: character.char_color || "#f5f5f5" }}>
+                                    {character.modern_char?.asset?.url && (
+                                        <img
+                                        src={character.modern_char.asset.url}
+                                        alt={character.letter_name}
+                                        className="w-3/5 h-3/5 object-contain"
+                                        />
+                                    )}
+                                </div>
+                                <div className="face bottom" style={{ backgroundColor: character.char_color || "#f5f5f5" }}>
+                                    {character.modern_char?.asset?.url && (
+                                        <img
+                                        src={character.modern_char.asset.url}
+                                        alt={character.letter_name}
+                                        className="w-3/5 h-3/5 object-contain"
+                                        />
+                                    )}
+                                </div>
                             </div>
                         </div>
+                    ))}
                     </div>
                 ))}
-                </div>
-            ))}
-            
-            <CharacterModal character={selectedCharacter} onClose={() => setSelectedCharacter(null)} />
+                
+                <CharacterModal character={selectedCharacter} onClose={() => setSelectedCharacter(null)} />
+            </div>
         </div>
     );
   }
