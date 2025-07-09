@@ -50,30 +50,33 @@ export default function CharacterGrid({ characters }: { characters: Character[] 
 
     const cubeRefs = useRef<HTMLDivElement[]>([]);
 
-
+    const faceRotationMap = {
+        front: { x: 0, y: 0 },
+        back: { x: 0, y: 180 },
+        right: { x: 0, y: -90 },
+        left: { x: 0, y: 90 },
+        top: { x: -90, y: 0 },
+        bottom: { x: 90, y: 0 },
+    };
 
     useLayoutEffect(() => {
         cubeRefs.current.forEach((cube, i) => {
             if (cube){
                 const delay = i * 0.01;
-                rollCube(cube, delay);
+                rollCube(cube, delay, 2, {x:360, y:360});//360,360
             }
         });
     }, []);
 
-    const rollCube = (cube: HTMLDivElement, delay: number) => {
-        gsap.fromTo(
+    const rollCube = (cube: HTMLDivElement, delay: number, rottime: number, angle: {x: number; y: number} ) => {
+        gsap.to(
             cube,
-            { rotationX: 0, rotationY: 0 },
             {
-                rotationX: "+=360",
-                rotationY: "-=360",
-                duration: 2,
+                rotationX: angle.x,
+                rotationY: angle.y,
+                duration: rottime,
                 delay,
                 ease: "power4.out",
-                onComplete: () => {
-                    gsap.set(cube, { rotationX: 0, rotationY: 0 });
-                },
             }
         );
     };
@@ -84,6 +87,15 @@ export default function CharacterGrid({ characters }: { characters: Character[] 
       
     const handleMouseLeave = (el: HTMLDivElement) => {
     gsap.to(el, { scale: 1, duration: 0.3, ease: "power2.out" });
+    };
+    
+    const handleRotClick = (angle: {x: number; y: number}) => {
+        cubeRefs.current.forEach((cube, i) => {
+            if (cube){
+                const delay = i * 0.01;
+                rollCube(cube, delay, 1, angle);//360,360
+            }
+        });
     };
 
     let overallIndex = 0;
@@ -123,6 +135,44 @@ export default function CharacterGrid({ characters }: { characters: Character[] 
                     ) : (
                     <p>Select a font to see its characters.</p>
                     )}
+                </div>
+            </div>
+            <div className="flex flex-row">
+                <div className="p-2 border rounded mb-6">  
+                    <button 
+                    onClick={() => handleRotClick(faceRotationMap.front)}>
+                        Front
+                    </button>
+                </div>
+                <div className="p-2 border rounded mb-6">  
+                    <button 
+                    onClick={() => handleRotClick(faceRotationMap.right)}>
+                        Right
+                    </button>
+                </div>
+                <div className="p-2 border rounded mb-6">  
+                    <button 
+                    onClick={() => handleRotClick(faceRotationMap.left)}>
+                        Left
+                    </button>
+                </div>
+                <div className="p-2 border rounded mb-6">  
+                    <button 
+                    onClick={() => handleRotClick(faceRotationMap.top)}>
+                        Top
+                    </button>
+                </div>
+                <div className="p-2 border rounded mb-6">  
+                    <button 
+                    onClick={() => handleRotClick(faceRotationMap.bottom)}>
+                        Bottom
+                    </button>
+                </div>
+                <div className="p-2 border rounded mb-6">  
+                    <button 
+                    onClick={() => handleRotClick(faceRotationMap.back)}>
+                        Back
+                    </button>
                 </div>
             </div>
             <div className="flex flex-col [gap:clamp(1.5rem,2.75vw,4rem)]">
