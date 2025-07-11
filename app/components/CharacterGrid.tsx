@@ -41,6 +41,8 @@ function renderFace(
     data: CharacterRow[],
     selectedScript: string
   ) {
+    /** doing this is very inefficient, I am thinking of adding an index on the csv so that I can get a list on the layer above,
+     *  and have the just the character be passed down to the function, instead of the whole data and filtering it here.*/
     const filteredChar = selectedScript ? 
         data.filter(row => row.script_title === selectedScript && character.letter_name == row.letter_name)[0]: 
         {letter_name: "", script_title: "", font_title: "", char: ""};
@@ -228,7 +230,6 @@ export default function CharacterGrid({ characters }: { characters: Character[] 
         <div>
             <div className="p-1">
                 {/* Font Dropdown */}
-                <label className="block mb-1 font-semibold text-md">Select a Font Style:</label>
                 <select
                     onChange={(e) => handleScriptChange(e.target.value)}
                     value={selectedScript || ''}
