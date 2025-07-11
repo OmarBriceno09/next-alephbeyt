@@ -16,7 +16,7 @@ export default function Footer() {
   ));
 
   return (
-    <footer className="fixed bottom-0 left-0 w-full h-[10vh] bg-white z-50">
+    <footer className="fixed bottom-0 left-0 w-full h-[7vh] bg-white z-50">
       <div className="grid grid-rows-2 h-full">
         {/* Top Row (4 buttons) */}
         <div className="grid grid-cols-4">

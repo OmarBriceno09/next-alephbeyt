@@ -6,6 +6,23 @@ import CharacterModal from './CharacterModal';
 import { Character } from '@/types/Character';
 import Papa from 'papaparse';
 
+enum Faces{
+    front,
+    right,
+    left,
+    top,
+    bottom,
+    back,
+}
+const faceRotationMap = [
+    { x: 0, y: 0 },
+    { x: 0, y: -90 },
+    { x: 0, y: 90 },
+    { x: -90, y: 0 },
+    { x: 90, y: 0 },
+    { x: 0, y: 180 }
+];
+
 //type CharacterRow for switching fonts/scripts ***remove later***
 type CharacterRow = {
     letter_name: string;
@@ -14,6 +31,62 @@ type CharacterRow = {
     char: string;
 }
 
+function renderFace(
+    faceName: string,
+    character: {
+      char_color?: string;
+      modern_char?: { asset?: { url?: string } };
+      letter_name: string;
+    },
+    data: CharacterRow[],
+    selectedScript: string
+  ) {
+    const filteredChar = selectedScript ? 
+        data.filter(row => row.script_title === selectedScript && character.letter_name == row.letter_name)[0]: 
+        {letter_name: "", script_title: "", font_title: "", char: ""};
+    return (
+      <div
+        className={`face ${faceName}`}
+        style={{ backgroundColor: character.char_color || "#f5f5f5" }}
+        key={faceName}
+      >
+
+        {/**character.modern_char?.asset?.url && (
+          <img
+            src={character.modern_char.asset.url}
+            alt={character.letter_name}
+            className="w-3/5 h-3/5 object-contain"
+          />
+        )**/}
+        <h1 className="glyph-container">
+            <span
+                className="inline-block leading-none translate-y-[8%]"
+                style={{ fontFamily: `${filteredChar.font_title}, sans-serif` }}
+            >
+                {filteredChar.char}
+            </span>
+        </h1>
+        <span className="text-[1.5vw] sm:text-sm mt-1 text-center">
+            {character.letter_name}
+        </span>
+      </div>
+    );
+}
+
+function getNeighborScripts(scriptOrder: string [], newScript: string, total: number): string[] {
+    const index = scriptOrder.indexOf(newScript);
+    const half = Math.ceil(total / 2);
+    const diff = half*2 - total;
+    const wrap = (i: number) => (i + scriptOrder.length) % scriptOrder.length;
+
+    const neighbors = [];
+    for (let i = -half; i <= half-diff; i++) {
+      if (i !== 0) neighbors.push(scriptOrder[wrap(index + i)]);
+    }
+    return neighbors;
+}
+
+
 export default function CharacterGrid({ characters }: { characters: Character[] }) {
     const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
 
@@ -21,6 +94,7 @@ export default function CharacterGrid({ characters }: { characters: Character[] 
     //FontSwitcher var declarations
     const [data, setData] = useState<CharacterRow[]>([]);
     const [selectedScript, setSelectedScript] = useState<string | null>(null);
+    const [scriptFaces, setScriptFaces] = useState<string[]>([]);
 
     useEffect(() => {
         fetch('/data/AlephBeytDatabase.csv')
@@ -32,14 +106,57 @@ export default function CharacterGrid({ characters }: { characters: Character[] 
             });
             setData(parsed.data);
         });
+
     }, []);
 
-    const fontOptions = Array.from(new Set(data.map(row => row.script_title)));
+    const scriptOptions = Array.from(new Set(data.map(row => row.script_title)));
+    
+    useEffect(() => {
+        if (scriptOptions.length > 0 && !selectedScript) {
+        const initialFaces = getNeighborScripts(scriptOptions, scriptOptions[0], 5);
+        initialFaces.unshift(scriptOptions[0]);
+        setScriptFaces(initialFaces);
+        setSelectedScript(scriptOptions[0]); // default to first option
+        }
+    }, [scriptOptions, selectedScript]);
 
-    // Filter data by selected font
-    const filteredChars  = selectedScript
-    ? data.filter(row => row.script_title === selectedScript)
-    : data;
+    const handleScriptChange = async (newScript: string) => {
+        const faceIndex = scriptFaces.indexOf(newScript);
+        if (scriptFaces.includes(newScript)){
+            console.log("current face" ,Faces[faceIndex]);
+            await handleRotClick(faceRotationMap[faceIndex]);//rotate to index
+        }
+        else{
+            const selectedIndex = scriptFaces.indexOf(selectedScript||"");//this will get the previous selected face index
+            const newFaces = getNeighborScripts(scriptOptions, newScript, 5);
+            const partialFaces = [...scriptFaces]; //copy script faces
+            if(selectedIndex == Faces.front){// switch the back face, roll to it, then switch the rest of the faces
+                console.log("backface change");
+                //change backface
+                partialFaces[Faces.back] = newScript;
+                setScriptFaces(partialFaces);
+                //roll
+                await handleRotClick(faceRotationMap[Faces.back]);
+                //append to rest of faces
+                newFaces.push(newScript);
+
+            }else{//switch the front face, roll to it, then switch the rest of the faces
+                console.log("frontface change");
+                
+                //change front face
+                partialFaces[Faces.front] = newScript;
+                setScriptFaces(partialFaces);
+
+                //roll
+                await handleRotClick(faceRotationMap[Faces.front]);
+                //append to rest of faces
+                newFaces.unshift(newScript);
+            }
+            setScriptFaces(newFaces);//change all faces
+        }
+        // Optionally store it in state if needed elsewhere
+        setSelectedScript(newScript);
+    }
     //*----------------------------------------------------------------- */
   
     //splitting characters from groq... might remove later to just stick with csv
@@ -50,15 +167,6 @@ export default function CharacterGrid({ characters }: { characters: Character[] 
 
     const cubeRefs = useRef<HTMLDivElement[]>([]);
 
-    const faceRotationMap = {
-        front: { x: 0, y: 0 },
-        back: { x: 0, y: 180 },
-        right: { x: 0, y: -90 },
-        left: { x: 0, y: 90 },
-        top: { x: -90, y: 0 },
-        bottom: { x: 90, y: 0 },
-    };
-
     useLayoutEffect(() => {
         cubeRefs.current.forEach((cube, i) => {
             if (cube){
@@ -68,112 +176,70 @@ export default function CharacterGrid({ characters }: { characters: Character[] 
         });
     }, []);
 
-    const rollCube = (cube: HTMLDivElement, delay: number, rottime: number, angle: {x: number; y: number} ) => {
-        gsap.to(
-            cube,
-            {
-                rotationX: angle.x,
-                rotationY: angle.y,
-                duration: rottime,
-                delay,
-                ease: "power4.out",
-            }
-        );
+    const rollCube = (
+        cube: HTMLDivElement, 
+        delay: number, 
+        rottime: number, 
+        angle: {x: number; y: number} 
+    ): Promise<void> => {
+        return new Promise((resolve) =>{
+            gsap.to(
+                cube,
+                {
+                    rotationX: angle.x,
+                    rotationY: angle.y,
+                    duration: rottime,
+                    delay,
+                    ease: "power4.out",
+                    onComplete: () => {
+                        resolve();
+                    }
+                }
+            );
+        });
     };
 
     const handleMouseEnter = (el: HTMLDivElement) => {
-        gsap.to(el, { scale: 1.1, duration: 0.3, ease: "power2.out" });
+        gsap.to(el, { 
+            scale: 1.1,
+            duration: 0.3, 
+            ease: "power2.out" });
       };
       
     const handleMouseLeave = (el: HTMLDivElement) => {
-    gsap.to(el, { scale: 1, duration: 0.3, ease: "power2.out" });
+        gsap.to(el, { 
+            scale: 1,
+            duration: 0.3, 
+            ease: "power2.out" });
     };
     
-    const handleRotClick = (angle: {x: number; y: number}) => {
-        cubeRefs.current.forEach((cube, i) => {
-            if (cube){
-                const delay = i * 0.01;
-                rollCube(cube, delay, 1, angle);//360,360
-            }
+    const handleRotClick = async (angle: {x: number; y: number}) => {
+        const rollPromises = cubeRefs.current.map((cube, i) => {
+            if (!cube) return Promise.resolve();
+            const delay = i * 0.01;
+            return rollCube(cube, delay, 1, angle);//360,360
         });
+
+        await Promise.all(rollPromises);
     };
 
     let overallIndex = 0;
     return (
         <div>
-            <div className="p-4">
+            <div className="p-1">
                 {/* Font Dropdown */}
-                <label className="block mb-2 font-semibold text-lg">Select a Font Style:</label>
+                <label className="block mb-1 font-semibold text-md">Select a Font Style:</label>
                 <select
-                    onChange={(e) => setSelectedScript(e.target.value)}
+                    onChange={(e) => handleScriptChange(e.target.value)}
                     value={selectedScript || ''}
-                    className="p-2 border rounded mb-6"
+                    className="p-1 border rounded mb-4"
                 >
-                    <option value="" disabled>Select a font</option>
-                    {fontOptions.map((font, idx) => (
-                    <option key={idx} value={font}>
-                        {font}
+                    {scriptOptions.map((script, idx) => (
+                    <option key={idx} value={script}>
+                        {script}
                     </option>
                     ))}
                 </select>
-
-                {/* Characters for Selected Font */}
-                <div className="border p-4 min-h-[200px] text-4xl font-extrabold text-center">
-                    {selectedScript && filteredChars.length > 0 ? (
-                    filteredChars.map((row, i) => (
-                        <span
-                        key={i}
-                        style={{ 
-                            fontFamily: row.font_title, 
-                            margin: '0 0.5rem',
-                            display: 'inline-block',
-                        }}
-                        >
-                        {row.char}
-                        </span>
-                    ))
-                    ) : (
-                    <p>Select a font to see its characters.</p>
-                    )}
-                </div>
-            </div>
-            <div className="flex flex-row">
-                <div className="p-2 border rounded mb-6">  
-                    <button 
-                    onClick={() => handleRotClick(faceRotationMap.front)}>
-                        Front
-                    </button>
-                </div>
-                <div className="p-2 border rounded mb-6">  
-                    <button 
-                    onClick={() => handleRotClick(faceRotationMap.right)}>
-                        Right
-                    </button>
-                </div>
-                <div className="p-2 border rounded mb-6">  
-                    <button 
-                    onClick={() => handleRotClick(faceRotationMap.left)}>
-                        Left
-                    </button>
-                </div>
-                <div className="p-2 border rounded mb-6">  
-                    <button 
-                    onClick={() => handleRotClick(faceRotationMap.top)}>
-                        Top
-                    </button>
-                </div>
-                <div className="p-2 border rounded mb-6">  
-                    <button 
-                    onClick={() => handleRotClick(faceRotationMap.bottom)}>
-                        Bottom
-                    </button>
-                </div>
-                <div className="p-2 border rounded mb-6">  
-                    <button 
-                    onClick={() => handleRotClick(faceRotationMap.back)}>
-                        Back
-                    </button>
-                </div>
             </div>
             <div className="flex flex-col [gap:clamp(1.5rem,2.75vw,4rem)]">
                 {rows.map((row, i) => (
@@ -181,78 +247,32 @@ export default function CharacterGrid({ characters }: { characters: Character[] 
                         key={i}
                         className="flex justify-center [gap:clamp(1.5rem,2.75vw,4rem)]"
                     >
-                    {row.map((character) => (
-                        <div 
-                            ref = {(el) => {
-                                if (el) cubeRefs.current[overallIndex] = el;
-                                overallIndex += 1;
-                            }}
-                            key={`cube-${character._id}`} 
-                            className="cube perspective cursor-pointer" 
-                            onClick={() => setSelectedCharacter(character)}
-                            onMouseEnter={(e) => handleMouseEnter(e.currentTarget)}
-                            onMouseLeave={(e) => handleMouseLeave(e.currentTarget)}
-                        >
-                            <div className="cube-inner">
-                                <div 
-                                    className="face front" 
-                                    style={{ backgroundColor: character.char_color || "#f5f5f5" }}
+                        {row.map((character) => (
+                            <div 
+                                key={`cubewrapper-${character._id}`} 
+                                className="cursor-pointer"
+                                onClick={() => setSelectedCharacter(character)}
+                                onMouseEnter={(e) => handleMouseEnter(e.currentTarget)}
+                                onMouseLeave={(e) => handleMouseLeave(e.currentTarget)}
+                            >
+                                <div
+                                ref = {(el) => {
+                                    if (el) cubeRefs.current[overallIndex] = el;
+                                    overallIndex += 1;
+                                }}
+                                className="cube perspective" 
                                 >
-                                <h1 className="glyph-container">
-                                    <span className="glyph">𓆟</span>
-                                </h1>
-                                <span className="text-[1.5vw] sm:text-sm mt-1 text-center">
-                                    {character.letter_name}
-                                </span>
-                                </div>
-                                <div className="face back" style={{ backgroundColor: character.char_color || "#f5f5f5" }}>
-                                    {character.modern_char?.asset?.url && (
-                                        <img
-                                        src={character.modern_char.asset.url}
-                                        alt={character.letter_name}
-                                        className="w-3/5 h-3/5 object-contain"
-                                        />
-                                    )}
-                                </div>
-                                <div className="face left" style={{ backgroundColor: character.char_color || "#f5f5f5" }}>
-                                    {character.modern_char?.asset?.url && (
-                                        <img
-                                        src={character.modern_char.asset.url}
-                                        alt={character.letter_name}
-                                        className="w-3/5 h-3/5 object-contain"
-                                        />
-                                    )}
-                                </div>
-                                <div className="face right" style={{ backgroundColor: character.char_color || "#f5f5f5" }}>
-                                    {character.modern_char?.asset?.url && (
-                                        <img
-                                        src={character.modern_char.asset.url}
-                                        alt={character.letter_name}
-                                        className="w-3/5 h-3/5 object-contain"
-                                        />
-                                    )}
-                                </div>
-                                <div className="face top" style={{ backgroundColor: character.char_color || "#f5f5f5" }}>
-                                    {character.modern_char?.asset?.url && (
-                                        <img
-                                        src={character.modern_char.asset.url}
-                                        alt={character.letter_name}
-                                        className="w-3/5 h-3/5 object-contain"
-                                        />
-                                    )}
-                                </div>
-                                <div className="face bottom" style={{ backgroundColor: character.char_color || "#f5f5f5" }}>
-                                    {character.modern_char?.asset?.url && (
-                                        <img
-                                        src={character.modern_char.asset.url}
-                                        alt={character.letter_name}
-                                        className="w-3/5 h-3/5 object-contain"
-                                        />
-                                    )}
+                                    <div className="cube-inner">
+                                        {renderFace("front",character, data, scriptFaces[Faces.front])}
+                                        {renderFace("back",character, data, scriptFaces[Faces.back])}
+                                        {renderFace("left",character, data, scriptFaces[Faces.left])}
+                                        {renderFace("right",character, data, scriptFaces[Faces.right])}
+                                        {renderFace("top",character, data, scriptFaces[Faces.top])}
+                                        {renderFace("bottom",character, data, scriptFaces[Faces.bottom])}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        ))}
                     </div>
                 ))}
                 

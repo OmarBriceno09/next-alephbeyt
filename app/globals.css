@@ -162,9 +162,3 @@ body {
   font-style: normal;
   font-display: swap;
 }
-.glyph {
-  display: inline-block;
-  font-family: 'Noto Egyptian', sans-serif;
-  line-height: 1;
-  transform: translateY(8%);
-}
