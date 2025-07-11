@@ -4,8 +4,9 @@
   --background: #ffffff;
   --foreground: #171717;
 
-  /*--light-face: 1;     /* fully lit */
-
+  --light-face: 1;     /* fully lit */
+  --side-face: 0.85;   /* slightly darker */
+  --back-face: 0.65;   /* much darker */
 }
 
 @theme inline {
@@ -67,22 +68,27 @@ body {
 
 .face.front  { 
   transform: rotateY(  0deg) translateZ(var(--half-cube-size));
-  /*filter: brightness(var(--light-face)); */
+  filter: brightness(var(--light-face)); 
 }
 .face.back   { 
   transform: rotateY(180deg) translateZ(var(--half-cube-size)); 
+  filter: brightness(var(--back-face));
 }
 .face.right  { 
   transform: rotateY( 90deg) translateZ(var(--half-cube-size));
+  filter: brightness(var(--side-face)); 
 }
 .face.left   {
   transform: rotateY(-90deg) translateZ(var(--half-cube-size)); 
+  filter: brightness(var(--side-face));
 }
 .face.top    { 
   transform: rotateX( 90deg) translateZ(var(--half-cube-size));
+  filter: brightness(var(--side-face)); 
 }
 .face.bottom { 
   transform: rotateX(-90deg) translateZ(var(--half-cube-size));
+  filter: brightness(var(--back-face)); 
 }
 
 .glyph-container {
