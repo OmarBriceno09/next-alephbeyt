@@ -68,27 +68,27 @@ body {
 
 .face.front  { 
   transform: rotateY(  0deg) translateZ(var(--half-cube-size));
-  filter: brightness(var(--light-face)); 
+  /*filter: brightness(var(--light-face));*/
 }
 .face.back   { 
   transform: rotateY(180deg) translateZ(var(--half-cube-size)); 
-  filter: brightness(var(--back-face));
+  /*filter: brightness(var(--back-face));*/
 }
 .face.right  { 
   transform: rotateY( 90deg) translateZ(var(--half-cube-size));
-  filter: brightness(var(--side-face)); 
+  /*filter: brightness(var(--side-face));*/ 
 }
 .face.left   {
   transform: rotateY(-90deg) translateZ(var(--half-cube-size)); 
-  filter: brightness(var(--side-face));
+  /*filter: brightness(var(--side-face));*/
 }
 .face.top    { 
   transform: rotateX( 90deg) translateZ(var(--half-cube-size));
-  filter: brightness(var(--side-face)); 
+  /*filter: brightness(var(--side-face));*/
 }
 .face.bottom { 
   transform: rotateX(-90deg) translateZ(var(--half-cube-size));
-  filter: brightness(var(--back-face)); 
+  /*filter: brightness(var(--back-face));*/
 }
 
 .glyph-container {
