@@ -5,16 +5,16 @@ interface SanityAsset {
     url: string;
 }
 
-export type Character = {
+export type Letter = {
     _id: string;
     _createdAt: Date;
     letter_name: string;
     order_index: Int16Array;
-    char_color: string;
-    modern_char: {
+    display: string;
+    display_image: {
         asset?: SanityAsset;
     };
-    latin_char: string;
-    transliteral: string;
-    extended_summary: PortableTextBlock[];
+    transliteration: string;
+    variants: string;
+    exp_summary: PortableTextBlock[];
 }

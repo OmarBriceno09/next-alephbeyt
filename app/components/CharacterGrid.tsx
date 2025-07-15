@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useLayoutEffect } from 'react';
 import gsap from "gsap";
 import CharacterModal from './CharacterModal';
 import { Character } from '@/types/Character';
+import { Script } from '@/types/Script';
 import Papa from 'papaparse';
 
 enum Faces{
@@ -89,7 +90,7 @@ function getNeighborScripts(scriptOrder: string [], newScript: string, total: nu
 }
 
 
-export default function CharacterGrid({ characters }: { characters: Character[] }) {
+export default function CharacterGrid({ characters, scripts }: { characters: Character[], scripts:Script[] }) {
     const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
 
     //*----------------------------------------------------------------- */
