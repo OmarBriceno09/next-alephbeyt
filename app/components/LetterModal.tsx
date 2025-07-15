@@ -1,14 +1,14 @@
 import React from "react";
-import { Character } from "@/types/Character";
+import { Letter } from "@/types/Letter";
 import { PortableText } from '@portabletext/react';
 
 interface Props {
-  character: Character | null;
+  letter: Letter | null;
   onClose: () => void;
 }
 
-export default function CharacterModal({ character, onClose }: Props) {
-  if (!character) return null;
+export default function LetterModal({ letter, onClose }: Props) {
+  if (!letter) return null;
 
   return (
     <div 
@@ -23,19 +23,17 @@ export default function CharacterModal({ character, onClose }: Props) {
           ✕
         </button>
 
-        <h2 className="text-2xl font-bold mb-4">{character.letter_name}</h2>
+        <h2 className="text-2xl font-bold mb-4">{letter.letter_name}</h2>
 
-        {character.modern_char?.asset?.url && (
-          <img
-            src={character.modern_char.asset.url}
-            alt={character.letter_name}
-            className="w-32 h-32 mx-auto mb-4"
-          />
+        {letter.display && (
+          <span>
+            {letter.display}
+          </span>
         )}
 
-        {character.extended_summary && (
+        {letter.exp_summary && (
             <div className="text-gray-700">
-                <PortableText value={character.extended_summary} />
+                <PortableText value={letter.exp_summary} />
             </div>
         )}
       </div>

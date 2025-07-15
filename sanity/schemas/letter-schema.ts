@@ -1,4 +1,3 @@
-import { Rule } from '@sanity/types';
 
 const letter = {
     name: 'letter',

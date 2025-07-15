@@ -2,9 +2,9 @@
 
 import { useEffect, useState, useRef, useLayoutEffect } from 'react';
 import gsap from "gsap";
-import CharacterModal from './CharacterModal';
-import { Character } from '@/types/Character';
-import { Script } from '@/types/Script';
+import LetterModal from './LetterModal';
+import { Script, createEmptyScript } from '@/types/Script';
+import { Letter } from '@/types/Letter';
 import Papa from 'papaparse';
 
 enum Faces{
@@ -24,33 +24,22 @@ const faceRotationMap = [
     { x: 0, y: 180 }
 ];
 
-//type CharacterRow for switching fonts/scripts ***remove later***
-type CharacterRow = {
+type LettersSharedRow = {
     letter_name: string;
-    script_title: string;
-    font_title: string;
-    char: string;
+    key_color: string;
 }
+
 
 function renderFace(
     faceName: string,
-    character: {
-      char_color?: string;
-      modern_char?: { asset?: { url?: string } };
-      letter_name: string;
-    },
-    data: CharacterRow[],
-    selectedScript: string
+    letter: Letter,
+    sData: LettersSharedRow,
+    fontfam: string,
   ) {
-    /** doing this is very inefficient, I am thinking of adding an index on the csv so that I can get a list on the layer above,
-     *  and have the just the character be passed down to the function, instead of the whole data and filtering it here.*/
-    const filteredChar = selectedScript ? 
-        data.filter(row => row.script_title === selectedScript && character.letter_name == row.letter_name)[0]: 
-        {letter_name: "", script_title: "", font_title: "", char: ""};
     return (
       <div
         className={`face ${faceName}`}
-        style={{ backgroundColor: character.char_color || "#f5f5f5" }}
+        style={{ backgroundColor: sData.key_color || "#f5f5f5" }}
         key={faceName}
       >
 
@@ -64,77 +53,80 @@ function renderFace(
         <h1 className="glyph-container">
             <span
                 className="inline-block leading-none translate-y-[8%]"
-                style={{ fontFamily: `${filteredChar.font_title}, sans-serif` }}
+                style={{ fontFamily: `${fontfam}, sans-serif` }}
             >
-                {filteredChar.char}
+                {letter.display}
             </span>
         </h1>
         <span className="text-[1.5vw] sm:text-sm mt-1 text-center">
-            {character.letter_name}
+            {letter.letter_name}
         </span>
       </div>
     );
 }
 
-function getNeighborScripts(scriptOrder: string [], newScript: string, total: number): string[] {
-    const index = scriptOrder.indexOf(newScript);
+
+function getNeighborScripts(scripts: Script[], newScript_title: string, total: number): Script[] {
+    const index = scripts.findIndex(script => script.title === newScript_title);
     const half = Math.ceil(total / 2);
     const diff = half*2 - total;
-    const wrap = (i: number) => (i + scriptOrder.length) % scriptOrder.length;
+    const wrap = (i: number) => (i + scripts.length) % scripts.length;
 
     const neighbors = [];
     for (let i = -half; i <= half-diff; i++) {
-      if (i !== 0) neighbors.push(scriptOrder[wrap(index + i)]);
+      if (i !== 0) neighbors.push(scripts[wrap(index + i)]);
     }
     return neighbors;
 }
 
 
-export default function CharacterGrid({ characters, scripts }: { characters: Character[], scripts:Script[] }) {
+export default function LetterGrid({ scripts }: { scripts:Script[] }) {
 
-    console.log(scripts);
-
-    const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
+    const [selectedLetter, setSelectedLetter] = useState<Letter | null>(null);
 
     //*----------------------------------------------------------------- */
     //FontSwitcher var declarations
-    const [data, setData] = useState<CharacterRow[]>([]);
-    const [selectedScript, setSelectedScript] = useState<string | null>(null);
-    const [scriptFaces, setScriptFaces] = useState<string[]>([]);
+    const [shareddata, setSharedData] = useState<LettersSharedRow[]>([]);
 
+    const [selectedScript, setSelectedScript] = useState<Script | null>(null);
+    const [scriptFaces, setScriptFaces] = useState<Script[]>([]);
+
+    //keep this one
     useEffect(() => {
-        fetch('/data/AlephBeytDatabase.csv')
+        fetch('/data/LettersShared.csv')
             .then(res => res.text())
             .then(csv => {
-            const parsed = Papa.parse<CharacterRow>(csv, {
+            const parsed = Papa.parse<LettersSharedRow>(csv, {
                 header: true,
                 skipEmptyLines: true,
             });
-            setData(parsed.data);
+            setSharedData(parsed.data);
         });
 
     }, []);
 
-    const scriptOptions = Array.from(new Set(data.map(row => row.script_title)));
+    const scriptOptions = Array.from(new Set(scripts.map(script => script.title)));
     
+    //gets initial faces and projects them on die
     useEffect(() => {
         if (scriptOptions.length > 0 && !selectedScript) {
-        const initialFaces = getNeighborScripts(scriptOptions, scriptOptions[0], 5);
-        initialFaces.unshift(scriptOptions[0]);
+        const initialFaces = getNeighborScripts(scripts, scriptOptions[0], 5);
+        initialFaces.unshift(scripts[0]);
         setScriptFaces(initialFaces);
-        setSelectedScript(scriptOptions[0]); // default to first option
+        setSelectedScript(scripts[0]); // default to first option
         }
     }, [scriptOptions, selectedScript]);
 
-    const handleScriptChange = async (newScript: string) => {
-        const faceIndex = scriptFaces.indexOf(newScript);
-        if (scriptFaces.includes(newScript)){
+    const handleScriptChange = async (newScriptStr: string) => {//leave as str
+        const newScript = scripts.find(script => script.title === newScriptStr) ?? createEmptyScript();
+        const faceIndex = scriptFaces.findIndex(script => script.title === newScriptStr);
+        if (scriptFaces.some(script => script.title === newScriptStr)){//like includes
             console.log("current face" ,Faces[faceIndex]);
             await handleRotClick(faceRotationMap[faceIndex]);//rotate to index
         }
         else{
-            const selectedIndex = scriptFaces.indexOf(selectedScript||"");//this will get the previous selected face index
-            const newFaces = getNeighborScripts(scriptOptions, newScript, 5);
+            const selectedIndex = scriptFaces.findIndex(script => script.title === selectedScript?.title);//this will get the previous selected face index
+            const newFaces = getNeighborScripts(scripts, newScriptStr, 5);
             const partialFaces = [...scriptFaces]; //copy script faces
             if(selectedIndex == Faces.front){// switch the back face, roll to it, then switch the rest of the faces
                 console.log("backface change");
@@ -166,10 +158,10 @@ export default function CharacterGrid({ characters, scripts }: { characters: Cha
     //*----------------------------------------------------------------- */
   
     //splitting characters from groq... might remove later to just stick with csv
-    const row1 = characters.slice(0, 7);
-    const row2 = characters.slice(7, 15);
-    const row3 = characters.slice(15, 22);
-    const rows = [row1, row2, row3];
+    
+    //using set 7-8-7 pattern
+    //const numletters = selectedScript?.letters.length;
+    const rows = [7,8,7];
 
     const cubeRefs = useRef<HTMLDivElement[]>([]);
 
@@ -229,14 +221,14 @@ export default function CharacterGrid({ characters, scripts }: { characters: Cha
         await Promise.all(rollPromises);
     };
 
-    let overallIndex = 0;
+    let letterIndex = 0;
     return (
         <div>
             <div className="p-1">
                 {/* Font Dropdown */}
                 <select
                     onChange={(e) => handleScriptChange(e.target.value)}
-                    value={selectedScript || ''}
+                    value={selectedScript?.title || ''}
                     className="p-1 border rounded mb-4"
                 >
                     {scriptOptions.map((script, idx) => (
@@ -247,41 +239,52 @@ export default function CharacterGrid({ characters, scripts }: { characters: Cha
                 </select>
             </div>
             <div className="flex flex-col [gap:clamp(1.5rem,2.75vw,4rem)]">
-                {rows.map((row, i) => (
+                {rows.map((rowCount, i) => (
                     <div 
                         key={i}
-                        className="flex justify-center [gap:clamp(1.5rem,2.75vw,4rem)]"
+                        className="flex flex-row-reverse justify-center [gap:clamp(1.5rem,2.75vw,4rem)]"
                     >
-                        {row.map((character) => (
-                            <div 
-                                key={`cubewrapper-${character._id}`} 
+                        {Array.from({ length: rowCount }).map(() => {
+                            const letter = selectedScript?.letters?.[letterIndex];
+                            const cubeRefIndex = letterIndex;
+                            const cubeId = `cubewrapper-${letter?._id || cubeRefIndex}`;
+
+                            letterIndex++;
+
+                            return (
+                                <div 
+                                key={cubeId}
                                 className="cursor-pointer"
-                                onClick={() => setSelectedCharacter(character)}
+                                onClick={() => setSelectedLetter(letter || null)}
                                 onMouseEnter={(e) => handleMouseEnter(e.currentTarget)}
                                 onMouseLeave={(e) => handleMouseLeave(e.currentTarget)}
-                            >
-                                <div
-                                ref = {(el) => {
-                                    if (el) cubeRefs.current[overallIndex] = el;
-                                    overallIndex += 1;
-                                }}
-                                className="cube perspective" 
                                 >
-                                    <div className="cube-inner">
-                                        {renderFace("front",character, data, scriptFaces[Faces.front])}
-                                        {renderFace("back",character, data, scriptFaces[Faces.back])}
-                                        {renderFace("left",character, data, scriptFaces[Faces.left])}
-                                        {renderFace("right",character, data, scriptFaces[Faces.right])}
-                                        {renderFace("top",character, data, scriptFaces[Faces.top])}
-                                        {renderFace("bottom",character, data, scriptFaces[Faces.bottom])}
+                                    <div
+                                        ref={(el) => {
+                                        if (el) cubeRefs.current[cubeRefIndex] = el;
+                                        }}
+                                        className="cube perspective"
+                                    >
+                                        <div className="cube-inner">
+                                        {["front", "right", "left", "top", "bottom", "back"].map((faceName, faceIndex) => {
+                                            const script = scriptFaces[faceIndex];
+                                            const faceLetter = script?.letters?.[cubeRefIndex];
+                                            const font = script?.font || "sans-serif";
+                                            const faceShared = shareddata[cubeRefIndex];
+
+                                            if (!faceLetter || !faceShared) return null;
+
+                                            return renderFace(faceName, faceLetter, faceShared, font);
+                                        })}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 ))}
                 
-                <CharacterModal character={selectedCharacter} onClose={() => setSelectedCharacter(null)} />
+                <LetterModal letter={selectedLetter} onClose={() => setSelectedLetter(null)} />
             </div>
         </div>
     );

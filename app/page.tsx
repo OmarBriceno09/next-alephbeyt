@@ -1,9 +1,7 @@
-import {getCharacters} from '@/sanity/sanity-utils'
 import {getScripts} from '@/sanity/sanity-utils'
-import CharacterGrid from './components/CharacterGrid';
+import LetterGrid from './components/LetterGrid';
 
 export default async function Home() {
-  const hebrewChars = await getCharacters();
   const allScritps = await getScripts();
 
 
@@ -13,7 +11,7 @@ export default async function Home() {
       <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-10 text-center">
         Phoenicians
       </h1>
-      <CharacterGrid characters={hebrewChars} scripts={allScritps} />
+      <LetterGrid scripts={allScritps} />
     </div>
   );
 }
