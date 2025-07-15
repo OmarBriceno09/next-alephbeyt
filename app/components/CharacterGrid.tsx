@@ -91,6 +91,9 @@ function getNeighborScripts(scriptOrder: string [], newScript: string, total: nu
 
 
 export default function CharacterGrid({ characters, scripts }: { characters: Character[], scripts:Script[] }) {
+
+    console.log(scripts);
+
     const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
 
     //*----------------------------------------------------------------- */
