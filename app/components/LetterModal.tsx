@@ -1,14 +1,17 @@
 import React from "react";
 import { Letter } from "@/types/Letter";
+import { Script } from "@/types/Script";
 import { PortableText } from '@portabletext/react';
 
 interface Props {
   letter: Letter | null;
+  selScript: Script | null;
   onClose: () => void;
 }
 
-export default function LetterModal({ letter, onClose }: Props) {
+export default function LetterModal({ letter, selScript, onClose }: Props) {
   if (!letter) return null;
+  if (!selScript) return null;
 
   return (
     <div 
@@ -26,9 +29,14 @@ export default function LetterModal({ letter, onClose }: Props) {
         <h2 className="text-2xl font-bold mb-4">{letter.letter_name}</h2>
 
         {letter.display && (
-          <span>
-            {letter.display}
-          </span>
+          <h1 className="glyph-container">
+            <span
+              className="inline-block leading-none translate-y-[8%] font-bold"
+              style={{ fontFamily: `${selScript.font}, sans-serif`, fontSize: '90px'}}
+            >
+              {letter.display}
+            </span>
+          </h1>
         )}
 
         {letter.exp_summary && (

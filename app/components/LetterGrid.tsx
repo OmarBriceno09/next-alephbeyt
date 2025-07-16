@@ -52,13 +52,13 @@ function renderFace(
         )**/}
         <h1 className="glyph-container">
             <span
-                className="inline-block leading-none translate-y-[8%]"
+                className="inline-block select-none leading-none translate-y-[8%] text-[clamp(2rem,4vw,4rem)]"
                 style={{ fontFamily: `${fontfam}, sans-serif` }}
             >
                 {letter.display}
             </span>
         </h1>
-        <span className="text-[1.5vw] sm:text-sm mt-1 text-center">
+        <span className="select-none text-[clamp(0.6rem,1vw,1rem)] mt-1 text-center block">
             {letter.letter_name}
         </span>
       </div>
@@ -87,9 +87,10 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
     //*----------------------------------------------------------------- */
     //FontSwitcher var declarations
     const [shareddata, setSharedData] = useState<LettersSharedRow[]>([]);
-
     const [selectedScript, setSelectedScript] = useState<Script | null>(null);
     const [scriptFaces, setScriptFaces] = useState<Script[]>([]);
+
+    const [allowModalClick, setAllowModalClick] = useState(true);// this will allow for the die to be clickable
 
     //keep this one
     useEffect(() => {
@@ -122,7 +123,7 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
         const faceIndex = scriptFaces.findIndex(script => script.title === newScriptStr);
         if (scriptFaces.some(script => script.title === newScriptStr)){//like includes
             console.log("current face" ,Faces[faceIndex]);
-            await handleRotClick(faceRotationMap[faceIndex]);//rotate to index
+            await handleRotateTo(faceRotationMap[faceIndex], 0.5);//rotate to index
         }
         else{
             const selectedIndex = scriptFaces.findIndex(script => script.title === selectedScript?.title);//this will get the previous selected face index
@@ -134,7 +135,7 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
                 partialFaces[Faces.back] = newScript;
                 setScriptFaces(partialFaces);
                 //roll
-                await handleRotClick(faceRotationMap[Faces.back]);
+                await handleRotateTo(faceRotationMap[Faces.back], 0.5);
                 //append to rest of faces
                 newFaces.push(newScript);
 
@@ -146,7 +147,7 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
                 setScriptFaces(partialFaces);
 
                 //roll
-                await handleRotClick(faceRotationMap[Faces.front]);
+                await handleRotateTo(faceRotationMap[Faces.front], 0.5);
                 //append to rest of faces
                 newFaces.unshift(newScript);
             }
@@ -165,13 +166,10 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
 
     const cubeRefs = useRef<HTMLDivElement[]>([]);
 
+    
     useLayoutEffect(() => {
-        cubeRefs.current.forEach((cube, i) => {
-            if (cube){
-                const delay = i * 0.01;
-                rollCube(cube, delay, 2, {x:360, y:360});//360,360
-            }
-        });
+
+        handleRotateTo({x:360, y:360}, 1.5);
     }, []);
 
     const rollCube = (
@@ -211,19 +209,23 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
             ease: "power2.out" });
     };
     
-    const handleRotClick = async (angle: {x: number; y: number}) => {
+    const handleRotateTo = async (angle: {x: number; y: number}, duration: number) => {
+        setAllowModalClick(false); //can't open while rolling
+
         const rollPromises = cubeRefs.current.map((cube, i) => {
             if (!cube) return Promise.resolve();
             const delay = i * 0.01;
-            return rollCube(cube, delay, 1, angle);//360,360
+            return rollCube(cube, delay, duration, angle);//360,360
         });
 
         await Promise.all(rollPromises);
+
+        setAllowModalClick(true); // now able to
     };
 
     let letterIndex = 0;
     return (
-        <div>
+        <div className="justify-center">
             <div className="p-1">
                 {/* Font Dropdown */}
                 <select
@@ -238,11 +240,11 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
                     ))}
                 </select>
             </div>
-            <div className="flex flex-col [gap:clamp(1.5rem,2.75vw,4rem)]">
+            <div className="flex flex-col [gap:clamp(1.5rem,2.75vw,2rem)]">
                 {rows.map((rowCount, i) => (
                     <div 
                         key={i}
-                        className="flex flex-row-reverse justify-center [gap:clamp(1.5rem,2.75vw,4rem)]"
+                        className="flex flex-row-reverse justify-center [gap:clamp(1.5rem,2.75vw,2rem)]"
                     >
                         {Array.from({ length: rowCount }).map(() => {
                             const letter = selectedScript?.letters?.[letterIndex];
@@ -255,7 +257,11 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
                                 <div 
                                 key={cubeId}
                                 className="cursor-pointer"
-                                onClick={() => setSelectedLetter(letter || null)}
+                                onClick={() => {
+                                    if(allowModalClick){
+                                        setSelectedLetter(letter || null)
+                                    }
+                                }}
                                 onMouseEnter={(e) => handleMouseEnter(e.currentTarget)}
                                 onMouseLeave={(e) => handleMouseLeave(e.currentTarget)}
                                 >
@@ -284,7 +290,7 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
                     </div>
                 ))}
                 
-                <LetterModal letter={selectedLetter} onClose={() => setSelectedLetter(null)} />
+                <LetterModal letter={selectedLetter} selScript={selectedScript} onClose={() => setSelectedLetter(null)} />
             </div>
         </div>
     );
