@@ -208,7 +208,7 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
     };
 
     
-    const translateCube = (
+    /*const translateCube = (
         cube: HTMLDivElement, 
         transtime: number, 
         dir: {x: number; y: number}
@@ -227,7 +227,7 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
                 }
             )
         });
-    };
+    };*/
 
 
     const handleMouseEnter = (el: HTMLDivElement) => {
