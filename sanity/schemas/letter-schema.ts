@@ -10,9 +10,9 @@ const letter = {
         {
             name:'display_image',
             title: 'Display Image',
-            type: 'image',
+            type: 'file',
             options: {
-                accept:'.svg .png',
+                accept:'.png'
             },
         },
         { name: 'transliteration', title: 'Transliteration', type: 'string' },

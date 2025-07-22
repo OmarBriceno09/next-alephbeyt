@@ -91,14 +91,23 @@ body {
   /*filter: brightness(var(--back-face));*/
 }
 
-.glyph-container {
+.text-glyph-container {
   display: flex;
   align-items: center;
   justify-content: center;
   line-height: 1;
   font-size: 4rem;
-  height: 6rem;
+  width: 6rem;
 }
+
+.img-glyph-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 5rem;
+  height: 5rem;
+}
+
 @font-face {
   font-family: 'Noto Egyptian';
   src: url('/fonts/NotoSansEgyptianHieroglyphs-Regular.woff2') format('woff2');

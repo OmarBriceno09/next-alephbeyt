@@ -29,14 +29,14 @@ export default function LetterModal({ letter, selScript, onClose }: Props) {
         <h2 className="text-2xl font-bold mb-4">{letter.letter_name}</h2>
 
         {letter.display && (
-          <h1 className="glyph-container">
+          <div className="glyph-container">
             <span
               className="inline-block leading-none translate-y-[8%] font-bold"
               style={{ fontFamily: `${selScript.font}, sans-serif`, fontSize: '90px'}}
             >
               {letter.display}
             </span>
-          </h1>
+          </div>
         )}
 
         {letter.exp_summary && (
