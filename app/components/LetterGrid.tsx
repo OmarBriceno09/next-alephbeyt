@@ -264,7 +264,7 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
         console.log(row,col);
         setSelectedLetter(letter || null);
 
-        let moveLeftCubesCord: Array<[number, number]> = [];
+        /**let moveLeftCubesCord: Array<[number, number]> = [];
         let moveRightCubesCord: Array<[number, number]> = [];
         const isRowEven = (row%2==0);
         cubeRefs.current.forEach((cbrow, i) => {
@@ -287,7 +287,7 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
         const moveLPromises = moveLeftCubesCord.forEach(([i,j], x)=> {
             translateCube(cubeRefs.current[i][j], 0.5, {x:-200,y:0});
         });
-        await Promise.all([moveLPromises, moveRPromises]);
+        await Promise.all([moveLPromises, moveRPromises]);**/
     };
 
     const handleOnCloseLetter = () =>{
@@ -334,8 +334,7 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
                                 className="cursor-pointer"
                                 onClick={() => {
                                     if(allowModalClick){
-                                        setSelectedLetter(letter || null);
-                                        //handleOnLetterClick(letter, i ,j)
+                                        handleOnLetterClick(letter, i ,j)
                                     }
                                 }}
                                 onMouseEnter={(e) => handleMouseEnter(e.currentTarget)}
