@@ -253,10 +253,10 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
         const selectedBound = cubeRefs.current[row][col].getBoundingClientRect();
         const [moveLeft, moveRight] = getDiceOpenPosition(selectedBound, row);
         console.log(moveLeft,moveRight)
-        moveLeftCubesCoords.current.forEach(([i,j], _)=> {
+        moveLeftCubesCoords.current.forEach(([i,j])=> {
             translateCube(cubeRefs.current[i][j], time, {x:moveLeft,y:0});
         });
-        moveRightCubesCoords.current.forEach(([i,j], _)=> {
+        moveRightCubesCoords.current.forEach(([i,j])=> {
             translateCube(cubeRefs.current[i][j], time, {x:moveRight,y:0});
         });
     }
@@ -306,8 +306,8 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
         moveLeftCubesCoords.current = [];
         moveRightCubesCoords.current = [];
 
-        cubeRefs.current.forEach((cbrow, i) => {
-            cbrow.forEach((cube, j) => {
+        cubeRefs.current.forEach((cbrow) => {
+            cbrow.forEach((cube) => {
                 translateCube(cube, 0.5, {x:0,y:0});
             })
         });
