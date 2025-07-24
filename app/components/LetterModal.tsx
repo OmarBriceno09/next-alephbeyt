@@ -27,16 +27,23 @@ export default function LetterModal({ letter, selScript, onClose }: Props) {
         </button>
 
         <h2 className="text-2xl font-bold mb-4">{letter.letter_name}</h2>
-
-        {letter.display && (
-          <div className="glyph-container">
-            <span
-              className="inline-block leading-none translate-y-[8%] font-bold"
-              style={{ fontFamily: `${selScript.font}, sans-serif`, fontSize: '90px'}}
-            >
-              {letter.display}
-            </span>
-          </div>
+        {letter.display_image?.asset?.url ? (
+                <h1 className="img-glyph-container">
+                    <img
+                    src={letter.display_image.asset.url}
+                    alt={letter.letter_name}
+                    className = "inline-block leading-none w-full h-full object-contain"
+                    />
+                </h1> 
+            ) : (
+                <h1 className="text-glyph-container">
+                    <span
+                        className="inline-block leading-none translate-y-[8%] font-bold"
+                        style={{ fontFamily: `${selScript.font}, sans-serif`, fontSize: '90px'}}
+                    >
+                        {letter.display}
+                    </span>
+                </h1>
         )}
 
         {letter.exp_summary && (

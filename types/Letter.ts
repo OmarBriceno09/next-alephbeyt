@@ -6,6 +6,7 @@ interface SanityAsset {
 }
 
 export type Letter = {
+    //sanity variables
     _id: string;
     _createdAt: Date;
     letter_name: string;
