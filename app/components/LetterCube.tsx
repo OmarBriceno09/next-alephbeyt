@@ -1,12 +1,11 @@
+
 import React from "react";
+import { useEffect, useRef, useState } from 'react';
+import gsap from "gsap";
 import { Letter } from "@/types/Letter";
 import { Script } from "@/types/Script";
+import { LettersSharedRow, ModalDimensions} from '@/types/MetaTypes';
 //import { PortableText } from '@portabletext/react';
-
-type LettersSharedRow = {
-    letter_name: string;
-    key_color: string;
-}
 
 function renderFace(
     faceName: string,
@@ -45,15 +44,17 @@ function renderFace(
     );
 }
 
+
 interface LetterCubeProps {
     cubeId: string,
     letter: Letter|undefined,
     shareddata: LettersSharedRow[],
     scriptFaces: Script[],
     cubeRefIndex: number,
+    modalDimensions: ModalDimensions,
     row: number,
     col: number,
-    onClick: (letter: Letter, i: number, j: number, element: HTMLDivElement) => void;
+    onClick: (letter: Letter, element: HTMLDivElement) => void;
     allowModalClick: boolean,
     handleMouseEnter: (element: HTMLDivElement, duration: number)=> void;
     handleMouseLeave: (element: HTMLDivElement, duration: number)=> void;
@@ -68,6 +69,7 @@ export default function LetterCube({
     shareddata,
     scriptFaces,
     cubeRefIndex,
+    modalDimensions,
     row,
     col,
     onClick,
@@ -78,29 +80,126 @@ export default function LetterCube({
     isSelected, //get selectedCoord from parent object
     onClose,
 }: LetterCubeProps) {
+    const expandedFaceRef = useRef<HTMLDivElement>(null);
+    const [isOpen, setIsOpen] = useState<boolean>(false);
+
+    const openExpanAnim = () => {
+        if (expandedFaceRef.current) {
+            const tl = gsap.timeline();
+            tl.to(
+                expandedFaceRef.current,
+                {
+                    width: modalDimensions.end_width,
+                    height: modalDimensions.start_height,
+                    x: modalDimensions.end_center[0],
+                    duration: 0.5,
+                    ease: "power2.out",
+                }
+            ).to(
+                expandedFaceRef.current,
+                {
+                    height: modalDimensions.end_height,
+                    y:modalDimensions.end_center[1],
+                    duration: 0.25,
+                    ease: "power2.out",
+                    onComplete: () =>  {
+                        setIsOpen(true);
+                    }
+                }
+            );
+        }
+    };
+
+    const reScaleExpan = () => {
+        if (expandedFaceRef.current) {
+            gsap.set(
+                expandedFaceRef.current,
+                {
+                    width: modalDimensions.end_width,
+                    height: modalDimensions.end_height,
+                    x: modalDimensions.end_center[0],
+                    ease: "power2.out",
+
+                }
+            );
+        }
+    }
+
+    const closeExpandAnim = () => {
+        if(expandedFaceRef.current) {
+            const tl = gsap.timeline();
+            tl.to(
+                expandedFaceRef.current,
+                {
+                    height: modalDimensions.start_height,
+                    y: modalDimensions.start_center[1],
+                    duration: 0.25,
+                    ease: "power2.out",
+                    onComplete: () =>  {
+                        onClose();
+                    }
+                }
+            ).to(
+                expandedFaceRef.current,
+                {
+                    width: modalDimensions.start_width,
+                    x: modalDimensions.start_center[0],
+                    duration: 0.5,
+                    ease: "power2.out",
+                }
+            );
+        } else {
+            onClose();
+        }
+    }
+
+    useEffect(() => {
+        if(isSelected){
+            if (!isOpen){
+                openExpanAnim(); 
+            } else {
+                reScaleExpan();
+            }
+        }
+
+    },[isSelected, modalDimensions]);
 
     return (
         <div 
             key={cubeId}
+            data-row={row}
+            data-col={col}
             className="relative z-[10]" // No cursor-pointer here
             onClick={(e) => {
                 if (allowModalClick && letter) {
-                onClick(letter, row, col, e.currentTarget as HTMLDivElement);
+                onClick(letter, e.currentTarget as HTMLDivElement);
                 }
             }}
             onMouseEnter={(e) => handleMouseEnter(e.currentTarget as HTMLDivElement, 0.3)}
             onMouseLeave={(e) => handleMouseLeave(e.currentTarget as HTMLDivElement, 0.3)}
             >
             {isSelected && (
-                <button
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onClose();
-                }}
-                className="absolute top-1 right-1 z-[50] pointer-events-auto text-black px-1"
+                <div
+                ref={expandedFaceRef}
+                className="absolute justify-center bg-emerald-100 z-[30]"
+                style={{ 
+                    width: modalDimensions.start_width, 
+                    height: modalDimensions.start_height, 
+                    pointerEvents: 'none', 
+                    backgroundColor: shareddata[cubeRefIndex].key_color || "#f5f5f5" }}
                 >
-                ✕
-                </button>
+
+                    <button
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        closeExpandAnim();
+                        setIsOpen(false);
+                    }}
+                    className="absolute top-1 right-1 z-[50] pointer-events-auto text-black px-1"
+                    >
+                    ✕
+                    </button>
+                </div>
             )}
             <div
                 ref={(el) => {
@@ -111,7 +210,7 @@ export default function LetterCube({
                 }}
                 className="cube perspective cursor-pointer"
             >
-                <div className="cube-inner">
+                <div className={`cube-inner ${isSelected ? 'hidden' : ''}`}>
                 {["front", "right", "left", "top", "bottom", "back"].map((faceName, faceIndex) => {
                     const script = scriptFaces[faceIndex];
                     const faceLetter = script?.letters?.[cubeRefIndex];
