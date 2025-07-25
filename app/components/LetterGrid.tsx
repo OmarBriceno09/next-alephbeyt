@@ -332,7 +332,7 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
     const handleOnCloseLetter = async () =>{
 
         const flatRefs = cubeRefs.current.flat();
-        const closePromises = flatRefs.map((cube, i) => {
+        const closePromises = flatRefs.map((cube) => {
             if (!cube) return Promise.resolve();
             return translateCube(cube, MODALCLOSETIME, {x:0,y:0});//360,360
         });
@@ -379,8 +379,9 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
                             const letter = selectedScript?.letters?.[letterIndex];
                             const cubeRefIndex = letterIndex;
                             const cubeId = `cubewrapper-${letter?._id || cubeRefIndex}`;
-
-                            const isSelected = parseInt(selCubeCont.current?.dataset.row!) === i && parseInt(selCubeCont.current?.dataset.col!) === j;
+                            const selRow = parseInt(selCubeCont.current?.dataset.row!);
+                            const selCol = parseInt(selCubeCont.current?.dataset.col!);
+                            const isSelected = (selRow === i && selCol=== j);
 
                             letterIndex++;
 
