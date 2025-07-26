@@ -66,7 +66,7 @@ function getDiceOpenPosition(selectedBound: DOMRect, row: number){
     const style = window.getComputedStyle(rowD!);
     const gap = parseFloat(style.gap);
 
-    const modalYMove = -((rowBound?.height||0)*(row) + (gap*row));
+    const modalYMove = -(((rowBound?.height||0)*(row)) + (gap*row));
 
     let moveLeft = 0;
     let moveRight = 0; //window.innerWidth - selectedBound.x

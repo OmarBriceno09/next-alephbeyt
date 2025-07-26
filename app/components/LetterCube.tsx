@@ -118,6 +118,7 @@ export default function LetterCube({
                     width: modalDimensions.end_width,
                     height: modalDimensions.end_height,
                     x: modalDimensions.end_center[0],
+                    y: modalDimensions.end_center[1],
                     ease: "power2.out",
 
                 }
