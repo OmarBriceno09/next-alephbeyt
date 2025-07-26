@@ -158,7 +158,6 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
     //*----------------------------------------------------------------- */
   
     //splitting characters from groq... might remove later to just stick with csv
-    
     //using set 7-8-7 pattern
     //const numletters = selectedScript?.letters.length;
     const rows = [7,8,7];
