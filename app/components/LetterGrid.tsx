@@ -380,10 +380,10 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
                             const cubeRefIndex = letterIndex;
                             const cubeId = `cubewrapper-${letter?._id || cubeRefIndex}`;
                            
-                            const rowStr = selCubeCont.current?.dataset.row!;
+                            const rowStr = selCubeCont.current?.dataset.row;
                             const selRow = rowStr !== undefined ? parseInt(rowStr) : -1;
-                            const colStr = selCubeCont.current?.dataset.col!;
-                            const selCol = rowStr !== undefined ? parseInt(colStr) : -1;
+                            const colStr = selCubeCont.current?.dataset.col;
+                            const selCol = colStr !== undefined ? parseInt(colStr) : -1;
                             const isSelected = (selRow === i && selCol=== j);
 
                             letterIndex++;
