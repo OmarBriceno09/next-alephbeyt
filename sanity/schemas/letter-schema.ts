@@ -30,8 +30,20 @@ const letter = {
         { name: 'num_val', title: 'Numerical Value', type: 'string'},
         { name: 'variants', title: 'Variants', type: 'string' },
         { name: 'classification', title: 'Classification', type: 'string'},
-        { name: 'exp_summary', title: 'Expanded Summary', type: 'array', of: [{type: 'block'}]},
-        // Add any other fields you need (e.g., SVG, audio, etc.)
+        { name: 'note_val', title: 'Note Value', type: 'string'},
+        { name: 'chord', title: 'Chord', type: 'string'},
+        { name: 'ftu_torah', title: 'First Time Used in Torah', type: 'array', of: [{type: 'block'}]},
+        { name: 'ftu_word', title: 'First Time Used at beginning of a word', type: 'array', of: [{type: 'block'}]},
+        { name: 'definition', title: 'Definitions', type: 'array', of: [{type: 'block'}]},
+        { name: 'sym_associations', title: 'Symbolic Associations', type: 'array', of: [{type: 'block'}]},
+        { name: 'psalms119', title: 'Psalms 119', type: 'array', of: [{type: 'block'}]},
+        { name: 'exp_summary', title: 'General Summary', type: 'array', of: [{type: 'block'}]},
+        {
+            name: 'imagePresentation',
+            title: 'Image Presentation',
+            type: 'array',
+            of:[{type: 'presImage'}],
+        },
     ],
 };
 
