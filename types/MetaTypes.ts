@@ -22,3 +22,14 @@ export const createEmptyModalDims = (): ModalDimensions => ({
     start_center: [0, 0],
     end_center: [0, 0]
   });
+
+export interface LetterDisplay{
+    display: string|undefined;
+    font: string|undefined;
+}
+
+export const createEmptyLetterDisplay = (): LetterDisplay => ({
+    display: "",
+    font: "",
+});
+  

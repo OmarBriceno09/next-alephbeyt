@@ -57,7 +57,8 @@ function getDiceOpenPosition(selectedBound: DOMRect, row: number){
     const rightPercentMove = 1 - blockProportion;
     const leftPercentMove = blockProportion;
     const modalWidth = LETTERMODALPERCENTSIZEWIDTH * rowWidth;
-    const modalHeight = LETTERMODALPERCENTSIZEHEIGHT * rowWidth;
+    //const modalHeight = LETTERMODALPERCENTSIZEHEIGHT * rowWidth;
+    const modalHeight = window.innerHeight - 1.35*(rowBound?.y||0);
 
     //middleMove-(modalWidth/2) + selectedBound.width;
     const midPercentMove = rightPercentMove-0.5;
@@ -88,7 +89,7 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
     //*----------------------------------------------------------------- */
     //FontSwitcher var declarations
     const [shareddata, setSharedData] = useState<LettersSharedRow[]>([]);
-    const [selectedScript, setSelectedScript] = useState<Script | null>(null);
+    const [selectedScriptIndex, setSelectedScriptIndex] = useState<number>(-1);
     const [scriptFaces, setScriptFaces] = useState<Script[]>([]);
 
     //keep this one
@@ -109,51 +110,51 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
     
     //gets initial faces and projects them on die
     useEffect(() => {
-        if (scriptOptions.length > 0 && !selectedScript) {
+        if (scriptOptions.length > 0 && selectedScriptIndex<0) {
         const initialFaces = getNeighborScripts(scripts, scriptOptions[0], 5);
         initialFaces.unshift(scripts[0]);
         setScriptFaces(initialFaces);
-        setSelectedScript(scripts[0]); // default to first option
+        setSelectedScriptIndex(0); // default to first option
         }
-    }, [scriptOptions, selectedScript]);
+    }, [scriptOptions, selectedScriptIndex]);
 
     const handleScriptChange = async (newScriptStr: string) => {//leave as str
-        const newScript = scripts.find(script => script.title === newScriptStr) ?? createEmptyScript();
+        const newScriptIndex = scripts.findIndex(script => script.title === newScriptStr);
         const faceIndex = scriptFaces.findIndex(script => script.title === newScriptStr);
         if (scriptFaces.some(script => script.title === newScriptStr)){//like includes
             console.log("current face" ,Faces[faceIndex]);
             await handleRotateTo(faceRotationMap[faceIndex], SWITCHROTTIME);//rotate to index
         }
         else{
-            const selectedIndex = scriptFaces.findIndex(script => script.title === selectedScript?.title);//this will get the previous selected face index
+            const selectedIndex = scriptFaces.findIndex(script => script.title === scripts[selectedScriptIndex]?.title);//this will get the previous selected face index
             const newFaces = getNeighborScripts(scripts, newScriptStr, 5);
             const partialFaces = [...scriptFaces]; //copy script faces
             if(selectedIndex == Faces.front){// switch the back face, roll to it, then switch the rest of the faces
                 console.log("backface change");
                 //change backface
-                partialFaces[Faces.back] = newScript;
+                partialFaces[Faces.back] = scripts[newScriptIndex];
                 setScriptFaces(partialFaces);
                 //roll
                 await handleRotateTo(faceRotationMap[Faces.back], SWITCHROTTIME);
                 //append to rest of faces
-                newFaces.push(newScript);
+                newFaces.push(scripts[newScriptIndex]);
 
             }else{//switch the front face, roll to it, then switch the rest of the faces
                 console.log("frontface change");
                 
                 //change front face
-                partialFaces[Faces.front] = newScript;
+                partialFaces[Faces.front] = scripts[newScriptIndex];
                 setScriptFaces(partialFaces);
 
                 //roll
                 await handleRotateTo(faceRotationMap[Faces.front], SWITCHROTTIME);
                 //append to rest of faces
-                newFaces.unshift(newScript);
+                newFaces.unshift(scripts[newScriptIndex]);
             }
             setScriptFaces(newFaces);//change all faces
         }
         // Optionally store it in state if needed elsewhere
-        setSelectedScript(newScript);
+        setSelectedScriptIndex(newScriptIndex);
     }
     //*----------------------------------------------------------------- */
   
@@ -164,10 +165,11 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
     const cubeRefs = useRef<HTMLDivElement[][]>([]);
     const selCubeCont = useRef<HTMLDivElement| null> (null);
 
-    const [selectedLetter, setSelectedLetter] = useState<Letter | null>(null);
+    const [selectedLetterIndex, setSelectedLetterIndex] = useState<number>(-1);
     const moveLeftCubesCoords = useRef<Array<[number, number]>>([]);
     const moveRightCubesCoords = useRef<Array<[number, number]>>([]);
     const [allowModalClick, setAllowModalClick] = useState(true);// this will allow for the die to be clickable
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [canHoverAnim, setCanHoverAnim] = useState(true);// allows die hoverAnim (expand when hovered)
     const [letterModalDimensions, setLetterModalDimensions] = useState<ModalDimensions>(createEmptyModalDims());
     
@@ -221,7 +223,6 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
         });
     };
 
-
     const handleMouseEnter = (el: HTMLDivElement, time:number) => {
         if (canHoverAnim){
             gsap.killTweensOf(el); // stop previous tweens
@@ -264,8 +265,8 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
         });
 
         await Promise.all(rollPromises);
-
-        setAllowModalClick(true); // now able to
+        if (!isModalOpen)
+            setAllowModalClick(true); // now able to
     };
 
     const moveDiceToOpenPos = (selDie: HTMLDivElement, time: number) => {
@@ -273,7 +274,6 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
         const selectedBound = selDie.getBoundingClientRect();
         
         const [moveLeft, moveRight, modalWidth, modalHeight, middleMove, modalYMove] = getDiceOpenPosition(selectedBound, row);
-        //console.log("modalWidth: ",modalWidth);
         setLetterModalDimensions({
             start_width: selectedBound.width,
             start_height: selectedBound.height,
@@ -293,25 +293,26 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
 
     useEffect(() => { // for scaling open cubes
         const handleResize = () => {
-            if (selectedLetter && selCubeCont.current){
+            if (selectedLetterIndex>=0 && selCubeCont.current){
                 moveDiceToOpenPos(selCubeCont.current, 0);
                 //console.log("new screen end width:", letterModalDimensions.end_width);
             }
         };
         window.addEventListener('resize', handleResize);
         return ()=> window.removeEventListener('resize', handleResize);
-    }, [selectedLetter,selCubeCont, letterModalDimensions]);
+    }, [selectedLetterIndex,selCubeCont, letterModalDimensions]);
 
     //nvm
-    const handleOnLetterClick = async (letter: Letter | undefined, el: HTMLDivElement) => {
+    const handleOnLetterClick = async (letterIndex: number, el: HTMLDivElement) => {
         await handleMouseLeave(el, 0.1); // await 0.1 seconds for size to reset after clicking
         const row = parseInt(el.dataset.row!);
         const col = parseInt(el.dataset.col!);
 
         selCubeCont.current = el;
-        setSelectedLetter(letter || null);
+        setSelectedLetterIndex(letterIndex);
         setCanHoverAnim(false);
         setAllowModalClick(false);
+        setIsModalOpen(true);
         
         cubeRefs.current.forEach((cbrow, i) => {
             cbrow.forEach((_, j) => {
@@ -338,26 +339,27 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
         await Promise.all(closePromises);
 
         selCubeCont.current = null;
-        setSelectedLetter(null);
+        setSelectedLetterIndex(-1);
         setCanHoverAnim(true);
         setAllowModalClick(true);
+        setIsModalOpen(false);
         //
         moveLeftCubesCoords.current = [];
         moveRightCubesCoords.current = [];
     };
 
-    let letterIndex = 0;
+    let letterIndex = -1;
     return (
         <div className="justify-center">
             {/* Title */}
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-10 text-center">
-                {selectedScript?.title}
+                {scripts[selectedScriptIndex]?.title}
             </h1>
             <div className="p-1">
                 {/* Font Dropdown */}
                 <select
                     onChange={(e) => handleScriptChange(e.target.value)}
-                    value={selectedScript?.title || ''}
+                    value={scripts[selectedScriptIndex]?.title || ''}
                     className="p-1 border rounded mb-4"
                 >
                     {scriptOptions.map((script, idx) => (
@@ -367,7 +369,7 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
                     ))}
                 </select>
             </div>
-            <div className="flex flex-col [gap:clamp(1.2rem,2.75vw,2rem)]">
+            <div className=" py-5 flex flex-col [gap:clamp(1.2rem,2.75vw,2rem)]">
                 {rows.map((rowCount, i) => (
                     <div 
                         key={i}
@@ -375,9 +377,8 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
                         data-row={i}
                     >
                         {Array.from({ length: rowCount }).map((_, j) => {
-                            const letter = selectedScript?.letters?.[letterIndex];
-                            const cubeRefIndex = letterIndex;
-                            const cubeId = `cubewrapper-${letter?._id || cubeRefIndex}`;
+                            letterIndex++;
+                            const cubeId = `cubewrapper-${letterIndex}`;
                            
                             const rowStr = selCubeCont.current?.dataset.row;
                             const selRow = rowStr !== undefined ? parseInt(rowStr) : -1;
@@ -385,16 +386,15 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
                             const selCol = colStr !== undefined ? parseInt(colStr) : -1;
                             const isSelected = (selRow === i && selCol=== j);
 
-                            letterIndex++;
-
                             return (
                                 <LetterCube
-                                    key={`LetterCube-${letter?._id || cubeRefIndex}`}
+                                    key={`LetterCube-${letterIndex}`}
                                     cubeId={cubeId}
-                                    letter={letter}
                                     shareddata={shareddata}
+                                    scripts={scripts}
                                     scriptFaces={scriptFaces}
-                                    cubeRefIndex={cubeRefIndex}
+                                    selectedScriptIndex={selectedScriptIndex}
+                                    letterIndex={letterIndex}
                                     modalDimensions={letterModalDimensions}
                                     row={i}
                                     col={j}

@@ -91,21 +91,48 @@ body {
   /*filter: brightness(var(--back-face));*/
 }
 
+.fade-mask{
+  --fade-width: 15%;
+
+  mask-image: linear-gradient(
+    to right,
+    transparent var(--fade-width),
+    black calc(var(--fade-width) + 1%),
+    black calc(100% - var(--fade-width)- 1%),
+    transparent 100% - var(--fade-width)
+  );
+  mask-repeat: no-repeat;
+  mask-size: 100% 100%;
+}
+
 .text-glyph-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  line-height: 1;
-  font-size: 4rem;
-  width: 6rem;
 }
 
 .img-glyph-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 5rem;
-  height: 5rem;
+}
+
+.image-die-scale {
+  width: clamp(2rem,4vw,5rem);
+  height: clamp(2rem,4vw,5rem);
+}
+
+.text-die-scale {
+  font-size: clamp(2rem,4vw,4rem);
+}
+
+.image-die-scale-small {
+  width: clamp(1rem,2.5vw,2.25rem);
+  height: clamp(1rem,2.5vw,2.25rem);
+}
+
+.text-die-scale-small {
+  font-size: clamp(1rem,2.5vw,2.5rem);
 }
 
 @font-face {
