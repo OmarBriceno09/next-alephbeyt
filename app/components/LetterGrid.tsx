@@ -3,8 +3,7 @@
 import { useEffect, useState, useRef, useLayoutEffect } from 'react';
 import gsap from "gsap";
 import LetterCube from './LetterCube';
-import { Script, createEmptyScript } from '@/types/Script';
-import { Letter } from '@/types/Letter';
+import { Script } from '@/types/Script';
 import { LettersSharedRow, ModalDimensions, createEmptyModalDims } from '@/types/MetaTypes';
 import Papa from 'papaparse';
 
@@ -26,7 +25,6 @@ const faceRotationMap = [
 ];
 
 const LETTERMODALPERCENTSIZEWIDTH = 0.8; 
-const LETTERMODALPERCENTSIZEHEIGHT = 0.5; 
 const ENTERROTATIONTIME = 1.5;
 const SWITCHROTTIME = 0.5;
 const MODALOPENTIME = 0.5;
