@@ -8,7 +8,7 @@ const presImage = {
             title: 'Image',
             type: 'file',
             options: {
-                accept:'.png .jpg .jpeg'
+                accept:'.png, .jpg, .jpeg'
             },
         },
         { 
