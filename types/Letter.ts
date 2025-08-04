@@ -1,4 +1,6 @@
 import { PortableTextBlock } from "sanity";
+import { PresImage } from "./PresImage";
+import { LetterStats } from "./LetterStats";
 
 interface SanityAsset {
     _id: string;
@@ -15,7 +17,12 @@ export type Letter = {
     display_image: {
         asset?: SanityAsset;
     };
-    transliteration: string;
-    variants: string;
+    stats: LetterStats;
+    ftu_torah: PortableTextBlock[];
+    ftu_word: PortableTextBlock[];
+    definition: PortableTextBlock[];
+    sym_associations: PortableTextBlock[];
+    psalms119: PortableTextBlock[];
     exp_summary: PortableTextBlock[];
+    imagePresentation: PresImage[];
 }

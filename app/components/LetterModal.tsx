@@ -8,9 +8,8 @@ import { useEffect, useRef, useState } from 'react';
 import gsap from "gsap";
 import { Script } from "@/types/Script";
 import Carousel from "./Carousel";
-import { PortableText } from '@portabletext/react';
-import { LettersSharedRow, ModalDimensions, LetterDisplay, createEmptyLetterDisplay} from '@/types/MetaTypes';
-
+import ModalBlockSnippet from "./ModalBlockSnippet"
+import { LettersSharedRow, ModalDimensions, LetterDisplay, createEmptyLetterDisplay, hexToHsl} from '@/types/MetaTypes';
 
 interface ModalProps {
   scripts: Script [],
@@ -170,15 +169,10 @@ export default function LetterModal({
 
 
 
-  const ModalContentDisplay = () => {
-      const script = scripts[selectedScriptIndex]
-      const letter = script.letters?.[letterIndex]; //finds letter here
-
-      console.log(letter.transliteration);
-      //console.log(letterDisplayList[selectedScriptIndex]);
+  const ModalHeader = () => {
       return(
           <div 
-            className="relative"
+            className="ModalHeader relative"
           >
             
             <div className="flex flex-row w-full">
@@ -198,36 +192,73 @@ export default function LetterModal({
                     modalDimensions = {modalDimensions}
                 />}
               </div>
-              
             </div>
-
-            <div className="h-64 mx-20 bg-white/30 overflow-y-auto pointer-events-auto drop-shadow-lg/25">
-              {letter?.exp_summary && (
-                  <div 
-                    className="text-gray-700"// border border-gray-300"
-                  >
-                      <PortableText value={letter.exp_summary} />
-                  </div>
-              )}
-            </div>
-
           </div>
       );
   };
+
+  //Has all Letter info
+  const ModalBody = () => {
+    const script = scripts[selectedScriptIndex]
+    const letter = script.letters?.[letterIndex]; //finds letter here
+    return(
+      <div className="ModalBody h-full overflow-y-auto pointer-events-auto">
+        <div 
+          className="flex flex-col items-end space-y-5 justify-start"
+          style={{
+            paddingInline: modalDimensions.start_width*0.3,
+            paddingBlock: modalDimensions.start_width*0.1
+          }}
+        >
+          {letter?.stats && (
+            <ModalBlockSnippet
+              title={"Stats"}
+              color={shareddata[letterIndex].key_color}
+              startOpen={true}
+              information={letter.stats as any}
+              modalDimensions={modalDimensions}
+
+            />
+          )}
+          {letter?.exp_summary && (
+            <ModalBlockSnippet
+              title={"Expanded Summary"}
+              color={shareddata[letterIndex].key_color}
+              information={letter.exp_summary as any}
+              modalDimensions={modalDimensions}
+
+            />
+          )}
+          {letter?.definition && (
+            <ModalBlockSnippet
+              title={"Definition"}
+              color={shareddata[letterIndex].key_color}
+              information={letter.definition as any}
+              modalDimensions={modalDimensions}
+            />
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className = "lettermodal">
       {isSelected && (
         <div
         ref={expandedFaceRef}
-        className="absolute justify-center bg-emerald-100 z-[30] overflow-hidden"
+        className="absolute flex flex-col justify-between bg-emerald-100 z-[30] pointer-events-auto"
         style={{ 
             width: modalDimensions.start_width, 
             height: modalDimensions.start_height, 
             pointerEvents: 'none', 
             backgroundColor: shareddata[letterIndex].key_color || "#f5f5f5" }}
         >
+          {ModalHeader()}
+          
+          {ModalBody()}
 
+          <div className="shrink-0 flex justify-end p-4">
             <button
             onClick={(e) => {
                 e.stopPropagation();
@@ -237,7 +268,7 @@ export default function LetterModal({
             className="absolute bottom-1 right-1 z-[50] pointer-events-auto text-black px-1">
             ✕
             </button>
-            {ModalContentDisplay()}
+          </div>
         </div>
       )}
     </div>

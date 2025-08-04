@@ -25,9 +25,39 @@ export async function getScripts(): Promise<Script[]>{
                         url
                     }
                 },
-                transliteration,
-                variants,
-                exp_summary
+                stats{
+                    letter_name,
+                    name_pronounced,
+                    letter_pronounced,
+                    transliteration,
+                    sounds_like_text,
+                    sounds_like_audio{
+                        asset->{
+                            _id,
+                            url
+                        }
+                    },
+                    num_val,
+                    variants,
+                    classification,
+                    note_val,
+                    chord,
+                },
+                ftu_torah,
+                ftu_word,
+                definition,
+                sym_associations,
+                psalms119,
+                exp_summary,
+                imagePresentation[]{
+                    image{
+                        asset->{
+                            _id,
+                            url
+                        }
+                    },
+                    description
+                }
             } | order(order_index asc),
             exp_summary
         }`

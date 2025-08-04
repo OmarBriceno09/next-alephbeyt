@@ -24,7 +24,7 @@ const faceRotationMap = [
     { x: 0, y: 180 }
 ];
 
-const LETTERMODALPERCENTSIZEWIDTH = 0.8; 
+const LETTERMODALPERCENTSIZEWIDTH = 0.9; 
 const ENTERROTATIONTIME = 1.5;
 const SWITCHROTTIME = 0.5;
 const MODALOPENTIME = 0.5;
