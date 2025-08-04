@@ -12,7 +12,7 @@ interface ModalBlockSnippet {
   title: string,
   color: string,
   startOpen?: boolean,
-  information: PortableTextBlock | LetterStats,
+  information: PortableTextBlock[] | LetterStats,
   modalDimensions: ModalDimensions,
 }
 

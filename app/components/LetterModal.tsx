@@ -10,6 +10,7 @@ import { Script } from "@/types/Script";
 import Carousel from "./Carousel";
 import ModalBlockSnippet from "./ModalBlockSnippet"
 import { LettersSharedRow, ModalDimensions, LetterDisplay, createEmptyLetterDisplay, hexToHsl} from '@/types/MetaTypes';
+import { PortableTextBlock } from "next-sanity";
 
 interface ModalProps {
   scripts: Script [],
@@ -215,7 +216,7 @@ export default function LetterModal({
               title={"Stats"}
               color={shareddata[letterIndex].key_color}
               startOpen={true}
-              information={letter.stats as any}
+              information={letter.stats}
               modalDimensions={modalDimensions}
 
             />
@@ -224,7 +225,7 @@ export default function LetterModal({
             <ModalBlockSnippet
               title={"Expanded Summary"}
               color={shareddata[letterIndex].key_color}
-              information={letter.exp_summary as any}
+              information={letter.exp_summary as PortableTextBlock[]}
               modalDimensions={modalDimensions}
 
             />
@@ -233,7 +234,7 @@ export default function LetterModal({
             <ModalBlockSnippet
               title={"Definition"}
               color={shareddata[letterIndex].key_color}
-              information={letter.definition as any}
+              information={letter.definition as PortableTextBlock[]}
               modalDimensions={modalDimensions}
             />
           )}
