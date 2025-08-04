@@ -9,7 +9,7 @@ import gsap from "gsap";
 import { Script } from "@/types/Script";
 import Carousel from "./Carousel";
 import ModalBlockSnippet from "./ModalBlockSnippet"
-import { LettersSharedRow, ModalDimensions, LetterDisplay, createEmptyLetterDisplay} from '@/types/MetaTypes';
+import { LettersSharedRow, ModalDimensions, LetterDisplay, createEmptyLetterDisplay, hexToHsl} from '@/types/MetaTypes';
 import { PortableTextBlock } from "next-sanity";
 
 interface ModalProps {
@@ -171,31 +171,47 @@ export default function LetterModal({
 
 
   const ModalHeader = () => {
-      return(
-          <div 
-            className="ModalHeader relative"
-          >
-            
-            <div className="flex flex-row w-full">
-              {/*Letter Left Display*/}
-              <div
-                style={{ width: modalDimensions.start_width, height: modalDimensions.start_height }}
-                className="flex items-center justify-center shrink-0"
-              >
-                {letterBoxDisplay(letterDisplayList[selectedScriptIndex], "die-scale")}
-              </div>
-              {/*Carousel*/}
-              <div 
-                className="flex items-center overflow-hidden"
-              >
-                {<Carousel
-                    letterDisplayList={letterDisplayList}
-                    modalDimensions = {modalDimensions}
-                />}
-              </div>
+    const script = scripts[selectedScriptIndex]
+    const letter = script.letters?.[letterIndex];
+    const saturated = hexToHsl(shareddata[letterIndex].key_color, 80, 50);
+
+    return(
+        <div 
+          className="ModalHeader relative"
+        >
+          
+          <div className="flex flex-row w-full">
+            {/*Letter Left Display*/}
+            <div
+              style={{ width: modalDimensions.start_width, height: modalDimensions.start_height }}
+              className="flex items-center justify-center shrink-0"
+            >
+              {letterBoxDisplay(letterDisplayList[selectedScriptIndex], "die-scale")}
+            </div>
+            {/*Carousel*/}
+            <div 
+              className="flex items-center overflow-hidden"
+            >
+              {<Carousel
+                  letterDisplayList={letterDisplayList}
+                  modalDimensions = {modalDimensions}
+              />}
             </div>
           </div>
-      );
+          {/*Letter Name*/}
+          <div className="absolute left-10 my-2">
+            <h1 
+              className="text-6xl select-none"
+              style={{ 
+                color: saturated,
+                letterSpacing: "5px"
+              }}
+            >
+              {letter.letter_name.toUpperCase()}
+            </h1>
+          </div>
+        </div>
+    );
   };
 
   //Has all Letter info
@@ -213,7 +229,7 @@ export default function LetterModal({
         >
           {letter?.stats && (
             <ModalBlockSnippet
-              title={"Stats"}
+              title={"Basic Stats"}
               color={shareddata[letterIndex].key_color}
               startOpen={true}
               information={letter.stats}
@@ -221,13 +237,20 @@ export default function LetterModal({
 
             />
           )}
-          {letter?.exp_summary && (
+          {letter?.ftu_torah && (
             <ModalBlockSnippet
-              title={"Expanded Summary"}
+              title={"First Time Used in Torah"}
               color={shareddata[letterIndex].key_color}
-              information={letter.exp_summary as PortableTextBlock[]}
+              information={letter.ftu_torah as PortableTextBlock[]}
               modalDimensions={modalDimensions}
-
+            />
+          )}
+          {letter?.ftu_word && (
+            <ModalBlockSnippet
+              title={"First Time Used at the Beginning of a Word"}
+              color={shareddata[letterIndex].key_color}
+              information={letter.ftu_word as PortableTextBlock[]}
+              modalDimensions={modalDimensions}
             />
           )}
           {letter?.definition && (
@@ -236,6 +259,31 @@ export default function LetterModal({
               color={shareddata[letterIndex].key_color}
               information={letter.definition as PortableTextBlock[]}
               modalDimensions={modalDimensions}
+            />
+          )}
+          {letter?.sym_associations && (
+            <ModalBlockSnippet
+              title={"Symbolic Associations"}
+              color={shareddata[letterIndex].key_color}
+              information={letter.sym_associations as PortableTextBlock[]}
+              modalDimensions={modalDimensions}
+            />
+          )}
+          {letter?.psalms119 && (
+            <ModalBlockSnippet
+              title={"Psalms 119"}
+              color={shareddata[letterIndex].key_color}
+              information={letter.psalms119 as PortableTextBlock[]}
+              modalDimensions={modalDimensions}
+            />
+          )}
+          {letter?.exp_summary && (
+            <ModalBlockSnippet
+              title={"General Summary"}
+              color={shareddata[letterIndex].key_color}
+              information={letter.exp_summary as PortableTextBlock[]}
+              modalDimensions={modalDimensions}
+
             />
           )}
         </div>
@@ -248,7 +296,7 @@ export default function LetterModal({
       {isSelected && (
         <div
         ref={expandedFaceRef}
-        className="absolute flex flex-col justify-between bg-emerald-100 z-[30] pointer-events-auto"
+        className="absolute flex flex-col justify-between bg-emerald-100 z-[30] pointer-events-auto overflow-hidden"
         style={{ 
             width: modalDimensions.start_width, 
             height: modalDimensions.start_height, 

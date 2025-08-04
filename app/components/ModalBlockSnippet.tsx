@@ -139,6 +139,7 @@ export default function LetterModal({
             >
                 {isLetterStats(information) ? (
                   <div ref={contentInnerRef} className="mx-5 text-gray-700">
+                    <p><strong>Letter Name:</strong> {information.letter_name}</p>
                     <p><strong>Name Pronounced:</strong> {information.name_pronounced}</p>
                     <p><strong>Letter Pronounced:</strong> {information.letter_pronounced}</p>
                     <p><strong>Transliterated as:</strong> {information.transliteration}</p>
