@@ -9,7 +9,7 @@ import gsap from "gsap";
 import { Script } from "@/types/Script";
 import Carousel from "./Carousel";
 import ModalBlockSnippet from "./ModalBlockSnippet"
-import { LettersSharedRow, ModalDimensions, LetterDisplay, createEmptyLetterDisplay, hexToHsl} from '@/types/MetaTypes';
+import { LettersSharedRow, ModalDimensions, LetterDisplay, createEmptyLetterDisplay} from '@/types/MetaTypes';
 import { PortableTextBlock } from "next-sanity";
 
 interface ModalProps {

@@ -16,8 +16,13 @@ interface ModalBlockSnippet {
   modalDimensions: ModalDimensions,
 }
 
-function isLetterStats(data:any): data is LetterStats {
-  return typeof data === 'object' && 'letter_name' in data && 'name_pronounced' in data;
+function isLetterStats(data:unknown): data is LetterStats {
+  return(
+    typeof data === 'object' &&
+    data !== null &&
+    'letter_name' in data &&
+    'name_pronounced' in data
+  );
 }
 
 export default function LetterModal({ 
