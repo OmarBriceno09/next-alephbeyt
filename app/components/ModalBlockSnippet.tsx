@@ -106,7 +106,6 @@ export default function LetterModal({
     const saturated = hexToHsl(color, 80, 50);
     const lightened = hexToHsl(color, 85, 85);
 
-    console.log(information);
     useEffect(() => {
       if(startOpen){
         toggleExpand();
