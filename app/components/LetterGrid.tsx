@@ -116,8 +116,9 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
         }
     }, [scriptOptions, selectedScriptIndex]);
 
-    const handleScriptChange = async (newScriptStr: string) => {//leave as str
-        const newScriptIndex = scripts.findIndex(script => script.title === newScriptStr);
+    const handleScriptChange = async (newScriptIndex: number) => {//leave as str
+        const newScriptStr = scripts[newScriptIndex].title;
+
         const faceIndex = scriptFaces.findIndex(script => script.title === newScriptStr);
         if (scriptFaces.some(script => script.title === newScriptStr)){//like includes
             console.log("current face" ,Faces[faceIndex]);
@@ -356,7 +357,7 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
             <div className="p-1">
                 {/* Font Dropdown */}
                 <select
-                    onChange={(e) => handleScriptChange(e.target.value)}
+                    onChange={(e) => handleScriptChange(e.target.selectedIndex)}
                     value={scripts[selectedScriptIndex]?.title || ''}
                     className="p-1 border rounded mb-4"
                 >
@@ -403,6 +404,7 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
                                     cubeRefs={cubeRefs}
                                     isSelected={isSelected}
                                     onClose={handleOnCloseLetter}
+                                    scriptChange={handleScriptChange}
                                 />
                             );
                         })}

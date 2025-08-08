@@ -62,6 +62,7 @@ interface LetterCubeProps {
     cubeRefs: React.RefObject<HTMLDivElement[][]>,
     isSelected: boolean,
     onClose: () => void;
+    scriptChange: (newScriptIndex: number) => void;
 }
 
 export default function LetterCube({ 
@@ -81,6 +82,7 @@ export default function LetterCube({
     cubeRefs,
     isSelected, //get selectedCoord from parent object
     onClose,
+    scriptChange
 }: LetterCubeProps) {
 
     return (
@@ -105,6 +107,7 @@ export default function LetterCube({
                 isSelected = {isSelected}
                 modalDimensions = {modalDimensions}
                 onClose = {onClose}
+                scriptChange = {scriptChange}
             />}
 
             <div

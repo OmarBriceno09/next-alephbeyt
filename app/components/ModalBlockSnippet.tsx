@@ -2,7 +2,7 @@ import React from "react";
 import { useEffect, useRef, useState } from 'react';
 import gsap from "gsap";
 import { PortableText, PortableTextBlock, PortableTextComponents} from '@portabletext/react';
-import {ModalDimensions, hexToHsl} from '@/types/MetaTypes';
+import {ModalDimensions} from '@/types/MetaTypes';
 import { LetterStats } from "@/types/LetterStats";
 
 const MAXHEIGHT = 360;// 'h-90' in Tailwind = 360px
@@ -10,7 +10,9 @@ const MAXHEIGHT = 360;// 'h-90' in Tailwind = 360px
 
 interface ModalBlockSnippet {
   title: string,
-  color: string,
+  saturatedColor: string,
+  darkenedColor: string,
+  lightenedColor: string,
   startOpen?: boolean,
   information: PortableTextBlock[] | LetterStats,
   modalDimensions: ModalDimensions,
@@ -27,12 +29,15 @@ function isLetterStats(data:unknown): data is LetterStats {
 
 export default function LetterModal({ 
     title, 
-    color,
+    saturatedColor,
+    darkenedColor,
+    lightenedColor,
     startOpen=false,
     information,
     modalDimensions
   }: ModalBlockSnippet) {
     const [isExpanded, setIsExpanded] = useState(false);
+    const [hovered, setHovered] = useState(false);
     const contentWrapperRef = useRef<HTMLDivElement>(null);
     const contentInnerRef = useRef<HTMLDivElement>(null);
 
@@ -103,9 +108,6 @@ export default function LetterModal({
       setIsExpanded(!isExpanded);
     };
 
-    const saturated = hexToHsl(color, 80, 50);
-    const lightened = hexToHsl(color, 85, 85);
-
     useEffect(() => {
       if(startOpen){
         toggleExpand();
@@ -115,16 +117,18 @@ export default function LetterModal({
     return(
       <div 
         className="PortableTextBlockSnippet items-end drop-shadow-lg/25"
-        style={{ backgroundColor: lightened }}
+        style={{ backgroundColor: lightenedColor }}
       >
         {/*Title Area*/}
         <div 
-          className="h-12 flex items-center mx-4"
+          className="h-12 flex items-center mx-4 hover:cursor-pointer"
           onClick={() => {toggleExpand()}}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
         >
             <h1 
-              className="text-2xl select-none"
-              style={{ color: saturated }}
+              className="text-2xl select-none transition-colors duration-100"
+              style={{ color: hovered? darkenedColor : saturatedColor }}
             >
               {title}
             </h1>
@@ -158,7 +162,7 @@ export default function LetterModal({
                     <p><strong>Numerical Value:</strong> {information.num_val}</p>
                     <p><strong>Variants:</strong> {information.variants}</p>
                     <p><strong>Classification:</strong> {information.classification}</p>
-                    <p><strong>Nove Value:</strong> {information.note_val}</p>
+                    <p><strong>Note Value:</strong> {information.note_val}</p>
                     <p><strong>Chord:</strong> {information.chord}</p>
                   </div>
                 ):(

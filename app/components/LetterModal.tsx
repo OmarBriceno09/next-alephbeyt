@@ -4,12 +4,13 @@ in the future. It is invoked only by LetterCube.tsx whenever a user clicks on th
 //For future optimizing. There will only ever be one modal open at a time, so why don't I use one modal, hide it when closed, and when opened again, change the information?
 
 import React from "react";
+import Color from 'color';
 import { useEffect, useRef, useState } from 'react';
 import gsap from "gsap";
 import { Script } from "@/types/Script";
 import Carousel from "./Carousel";
 import ModalBlockSnippet from "./ModalBlockSnippet"
-import { LettersSharedRow, ModalDimensions, LetterDisplay, createEmptyLetterDisplay, hexToHsl} from '@/types/MetaTypes';
+import { LettersSharedRow, ModalDimensions, LetterDisplay, createEmptyLetterDisplay} from '@/types/MetaTypes';
 import { PortableTextBlock } from "next-sanity";
 
 interface ModalProps {
@@ -20,6 +21,7 @@ interface ModalProps {
   isSelected: boolean,
   modalDimensions: ModalDimensions,
   onClose: () => void;
+  scriptChange: (newScriptIndex: number) => void;
 }
 
 export default function LetterModal({ 
@@ -29,11 +31,15 @@ export default function LetterModal({
   shareddata,
   isSelected,
   modalDimensions,
-  onClose 
+  onClose,
+  scriptChange
 }: ModalProps) {
   const expandedFaceRef = useRef<HTMLDivElement>(null);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [letterDisplayList, setLetterDisplayList] = useState<LetterDisplay[]>([]);
+  const [satColor, setSatColor] = useState<string>("");
+  const [litColor, setLitColor] = useState<string>("");
+  const [darkColor, setDarkColor] = useState<string>("");
 
   //console.log("hello?: "(modalDimensions));
   const openExpanAnim = () => {
@@ -111,17 +117,18 @@ export default function LetterModal({
   useEffect(() => {
       if(isSelected){
           if (!isOpen){
-              makeLetterIllustrationList();
-              openExpanAnim(); 
+            declareIllustrations();
+            openExpanAnim(); 
           } else {
-              reScaleExpan();
+            reScaleExpan();
           }
       }
 
   },[isSelected, modalDimensions]);
 
 
-  const makeLetterIllustrationList = () =>{
+  //This function will generate the display lists and the colors. it will only do this once when its open
+  const declareIllustrations = () =>{
     if(letterDisplayList.length === 0){
       const letterList: React.SetStateAction<LetterDisplay[]> = [];
       scripts.forEach(sp => {
@@ -138,10 +145,14 @@ export default function LetterModal({
         letterList.push(newletter);
       });
       setLetterDisplayList(letterList);
+      setSatColor(Color(shareddata[letterIndex].key_color).hsl().saturationl(80).lightness(40).rgb().string());
+      setLitColor(Color(shareddata[letterIndex].key_color).hsl().saturationl(85).lightness(85).rgb().string());
+      setDarkColor(Color(shareddata[letterIndex].key_color).hsl().saturationl(80).lightness(20).rgb().string());
     } else {
       console.log("list exists");
     }
   }
+
 
   const letterBoxDisplay = (letterDisplay: LetterDisplay, scaletype: string) => {
     if (!letterDisplay) return;
@@ -173,7 +184,6 @@ export default function LetterModal({
   const ModalHeader = () => {
     const script = scripts[selectedScriptIndex]
     const letter = script.letters?.[letterIndex];
-    const saturated = hexToHsl(shareddata[letterIndex].key_color, 80, 50);
 
     return(
         <div 
@@ -193,8 +203,10 @@ export default function LetterModal({
               className="flex items-center overflow-hidden"
             >
               {<Carousel
+                  selectedScriptIndex={selectedScriptIndex}
                   letterDisplayList={letterDisplayList}
                   modalDimensions = {modalDimensions}
+                  scriptChange = {scriptChange}
               />}
             </div>
           </div>
@@ -203,7 +215,7 @@ export default function LetterModal({
             <h1 
               className="text-6xl select-none"
               style={{ 
-                color: saturated,
+                color: satColor,
                 letterSpacing: "5px"
               }}
             >
@@ -230,7 +242,9 @@ export default function LetterModal({
           {letter?.stats && (
             <ModalBlockSnippet
               title={"Basic Stats"}
-              color={shareddata[letterIndex].key_color}
+              saturatedColor={satColor}
+              lightenedColor={litColor}
+              darkenedColor={darkColor}
               startOpen={true}
               information={letter.stats}
               modalDimensions={modalDimensions}
@@ -240,7 +254,9 @@ export default function LetterModal({
           {letter?.ftu_torah && (
             <ModalBlockSnippet
               title={"First Time Used in Torah"}
-              color={shareddata[letterIndex].key_color}
+              saturatedColor={satColor}
+              lightenedColor={litColor}
+              darkenedColor={darkColor}
               information={letter.ftu_torah as PortableTextBlock[]}
               modalDimensions={modalDimensions}
             />
@@ -248,7 +264,9 @@ export default function LetterModal({
           {letter?.ftu_word && (
             <ModalBlockSnippet
               title={"First Time Used at the Beginning of a Word"}
-              color={shareddata[letterIndex].key_color}
+              saturatedColor={satColor}
+              lightenedColor={litColor}
+              darkenedColor={darkColor}
               information={letter.ftu_word as PortableTextBlock[]}
               modalDimensions={modalDimensions}
             />
@@ -256,7 +274,9 @@ export default function LetterModal({
           {letter?.definition && (
             <ModalBlockSnippet
               title={"Definition"}
-              color={shareddata[letterIndex].key_color}
+              saturatedColor={satColor}
+              lightenedColor={litColor}
+              darkenedColor={darkColor}
               information={letter.definition as PortableTextBlock[]}
               modalDimensions={modalDimensions}
             />
@@ -264,7 +284,9 @@ export default function LetterModal({
           {letter?.sym_associations && (
             <ModalBlockSnippet
               title={"Symbolic Associations"}
-              color={shareddata[letterIndex].key_color}
+              saturatedColor={satColor}
+              lightenedColor={litColor}
+              darkenedColor={darkColor}
               information={letter.sym_associations as PortableTextBlock[]}
               modalDimensions={modalDimensions}
             />
@@ -272,7 +294,9 @@ export default function LetterModal({
           {letter?.psalms119 && (
             <ModalBlockSnippet
               title={"Psalms 119"}
-              color={shareddata[letterIndex].key_color}
+              saturatedColor={satColor}
+              lightenedColor={litColor}
+              darkenedColor={darkColor}
               information={letter.psalms119 as PortableTextBlock[]}
               modalDimensions={modalDimensions}
             />
@@ -280,7 +304,9 @@ export default function LetterModal({
           {letter?.exp_summary && (
             <ModalBlockSnippet
               title={"General Summary"}
-              color={shareddata[letterIndex].key_color}
+              saturatedColor={satColor}
+              lightenedColor={litColor}
+              darkenedColor={darkColor}
               information={letter.exp_summary as PortableTextBlock[]}
               modalDimensions={modalDimensions}
 
