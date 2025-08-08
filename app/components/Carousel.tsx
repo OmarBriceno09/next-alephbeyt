@@ -63,7 +63,6 @@ export default function Carousel({
         }
     };
 
-    const rightStyle = (rightEnd) ? "" : "bg-red-400/50 hover:bg-red-700/50";
     return (
         <div 
             className="relative overflow-hidden bg-gray-500/20"
