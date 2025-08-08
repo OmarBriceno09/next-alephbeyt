@@ -44,7 +44,7 @@ export default function Carousel({
             setLeftEnd(false);
         }
         let count = offset;
-        scrollInterval.current = setInterval(() => {scrollAmount
+        scrollInterval.current = setInterval(() => {
             count = Math.max(maxScroll, Math.min(minScroll, count+scrollAmount));
 
             //check if wall has reached left or right end
