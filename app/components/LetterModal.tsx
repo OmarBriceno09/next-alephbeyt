@@ -2,7 +2,6 @@
 in the future. It is invoked only by LetterCube.tsx whenever a user clicks on the cube, and it closes when the user clicks on the X */
 
 //For future optimizing. There will only ever be one modal open at a time, so why don't I use one modal, hide it when closed, and when opened again, change the information?
-
 import React from "react";
 import Color from 'color';
 import { useEffect, useRef, useState } from 'react';
@@ -12,6 +11,7 @@ import Carousel from "./Carousel";
 import ModalBlockSnippet from "./ModalBlockSnippet"
 import { LettersSharedRow, ModalDimensions, LetterDisplay, createEmptyLetterDisplay} from '@/types/MetaTypes';
 import { PortableTextBlock } from "next-sanity";
+import LetterBoxSwapDisplay from "./LetterBoxSwapDisplay";
 
 interface ModalProps {
   scripts: Script [],
@@ -40,6 +40,7 @@ export default function LetterModal({
   const [satColor, setSatColor] = useState<string>("");
   const [litColor, setLitColor] = useState<string>("");
   const [darkColor, setDarkColor] = useState<string>("");
+
 
   //console.log("hello?: "(modalDimensions));
   const openExpanAnim = () => {
@@ -153,34 +154,6 @@ export default function LetterModal({
     }
   }
 
-
-  const letterBoxDisplay = (letterDisplay: LetterDisplay, scaletype: string) => {
-    if (!letterDisplay) return;
-    if ( letterDisplay.font === 'url'){
-      return(
-      <h1 className="img-glyph-container">
-        <img
-          src={letterDisplay.display}
-          alt="letter-img"
-          className = {`image-${scaletype} object-contain select-none`}
-        />
-      </h1>);
-    } else {
-      return(
-        <h1 className="text-glyph-container">
-          <span
-              className= {`inline-block select-none leading-none text-${scaletype}`}
-              style={{ fontFamily: `${letterDisplay.font}, sans-serif` }}
-          >
-              {letterDisplay.display}
-          </span>
-      </h1>
-      );
-    }
-  }
-
-
-
   const ModalHeader = () => {
     const script = scripts[selectedScriptIndex]
     const letter = script.letters?.[letterIndex];
@@ -192,12 +165,12 @@ export default function LetterModal({
           
           <div className="flex flex-row w-full">
             {/*Letter Left Display*/}
-            <div
-              style={{ width: modalDimensions.start_width, height: modalDimensions.start_height }}
-              className="flex items-center justify-center shrink-0"
-            >
-              {letterBoxDisplay(letterDisplayList[selectedScriptIndex], "die-scale")}
-            </div>
+            <LetterBoxSwapDisplay
+              letterDisplayList={letterDisplayList}
+              scriptIndex={selectedScriptIndex}
+              SWAPTIME={0.5}
+              modalDimensions={modalDimensions}
+            />
             {/*Carousel*/}
             <div 
               className="flex items-center overflow-hidden"

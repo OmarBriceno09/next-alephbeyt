@@ -1,5 +1,6 @@
 "use client";
 
+import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState, useRef, useLayoutEffect } from 'react';
 import gsap from "gsap";
 import LetterCube from './LetterCube';
@@ -84,6 +85,9 @@ function getDiceOpenPosition(selectedBound: DOMRect, row: number){
 
 export default function LetterGrid({ scripts }: { scripts:Script[] }) {
 
+    //Title and other polish
+    const [titleKey, setTitleKey] = useState(0);
+
     //*----------------------------------------------------------------- */
     //FontSwitcher var declarations
     const [shareddata, setSharedData] = useState<LettersSharedRow[]>([]);
@@ -116,8 +120,12 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
         }
     }, [scriptOptions, selectedScriptIndex]);
 
+
     const handleScriptChange = async (newScriptIndex: number) => {//leave as str
         const newScriptStr = scripts[newScriptIndex].title;
+
+        setTitleKey(newScriptIndex);//setting new title
+        setSelectedScriptIndex(newScriptIndex);
 
         const faceIndex = scriptFaces.findIndex(script => script.title === newScriptStr);
         if (scriptFaces.some(script => script.title === newScriptStr)){//like includes
@@ -153,7 +161,7 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
             setScriptFaces(newFaces);//change all faces
         }
         // Optionally store it in state if needed elsewhere
-        setSelectedScriptIndex(newScriptIndex);
+        //setSelectedScriptIndex(newScriptIndex);
     }
     //*----------------------------------------------------------------- */
   
@@ -351,9 +359,25 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
     return (
         <div className="justify-center">
             {/* Title */}
-            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-10 text-center">
-                {scripts[selectedScriptIndex]?.title}
-            </h1>
+            <div className="scriptTitle relative">
+                {/*<h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-10 text-center">
+                    {scripts[selectedScriptIndex]?.title}
+                </h1>*/}
+
+                <AnimatePresence mode="wait">
+                    <motion.h1
+                    key={titleKey}
+                    initial={{ y: "-100%", opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: "100%", opacity: 0 }}
+                    transition={{ duration: SWITCHROTTIME/2, ease: "easeInOut" }}
+                    className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-10 text-center"
+                    >
+                        {scripts[selectedScriptIndex]?.title}
+                    </motion.h1>
+                </AnimatePresence>
+            </div>
+
             <div className="p-1">
                 {/* Font Dropdown */}
                 <select

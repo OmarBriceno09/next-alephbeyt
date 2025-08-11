@@ -35,19 +35,19 @@ export default function Carousel({
         const scrollAmount = direction === "left" ? 3 : -3;
         if (scrollInterval.current) return;
 
-        if(offset == maxScroll){
-            setRightEnd(true);
-        }else if(offset == minScroll){
-            setLeftEnd(true);
-        }else{
-            setRightEnd(false);
-            setLeftEnd(false);
-        }
         let count = offset;
         scrollInterval.current = setInterval(() => {
             count = Math.max(maxScroll, Math.min(minScroll, count+scrollAmount));
-
             //check if wall has reached left or right end
+            if(count == maxScroll){
+                setRightEnd(true);
+            }else if(count == minScroll){
+                setLeftEnd(true);
+            }else{
+                setRightEnd(false);
+                setLeftEnd(false);
+            }
+
             gsap.set(el, {
                 x: count,
             })

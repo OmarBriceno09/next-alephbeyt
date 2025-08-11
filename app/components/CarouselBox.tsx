@@ -20,6 +20,7 @@ export default function CarouselBox({
     scriptChange
 }: CarouselBoxProps){
     const [hovered, setHovered] = useState(false);
+    
 
     const letterBoxDisplay = (
         letterDisplay: LetterDisplay, 
