@@ -224,6 +224,17 @@ export default function LetterModal({
 
             />
           )}
+          {letter?.exp_summary && (
+            <ModalBlockSnippet
+              title={"General Summary"}
+              saturatedColor={satColor}
+              lightenedColor={litColor}
+              darkenedColor={darkColor}
+              information={letter.exp_summary as PortableTextBlock[]}
+              modalDimensions={modalDimensions}
+
+            />
+          )}
           {letter?.ftu_torah && (
             <ModalBlockSnippet
               title={"First Time Used in Torah"}
@@ -274,15 +285,14 @@ export default function LetterModal({
               modalDimensions={modalDimensions}
             />
           )}
-          {letter?.exp_summary && (
+          {letter?.gramMorph && (
             <ModalBlockSnippet
-              title={"General Summary"}
+              title={"Grammatical Morphology"}
               saturatedColor={satColor}
               lightenedColor={litColor}
               darkenedColor={darkColor}
-              information={letter.exp_summary as PortableTextBlock[]}
+              information={letter.gramMorph as PortableTextBlock[]}
               modalDimensions={modalDimensions}
-
             />
           )}
         </div>

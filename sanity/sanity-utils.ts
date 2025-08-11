@@ -43,12 +43,13 @@ export async function getScripts(): Promise<Script[]>{
                     note_val,
                     chord,
                 },
+                exp_summary,
                 ftu_torah,
                 ftu_word,
                 definition,
                 sym_associations,
                 psalms119,
-                exp_summary,
+                gramMorph,
                 imagePresentation[]{
                     image{
                         asset->{

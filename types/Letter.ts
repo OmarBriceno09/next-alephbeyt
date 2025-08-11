@@ -18,11 +18,12 @@ export type Letter = {
         asset?: SanityAsset;
     };
     stats: LetterStats;
+    exp_summary: PortableTextBlock[];
     ftu_torah: PortableTextBlock[];
     ftu_word: PortableTextBlock[];
     definition: PortableTextBlock[];
     sym_associations: PortableTextBlock[];
     psalms119: PortableTextBlock[];
-    exp_summary: PortableTextBlock[];
+    gramMorph: PortableTextBlock[];
     imagePresentation: PresImage[];
 }

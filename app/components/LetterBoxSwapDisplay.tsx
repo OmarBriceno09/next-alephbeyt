@@ -77,8 +77,6 @@ export default function LetterBoxSwapDisplay({
   );
 }
 
-//Gramatical Morphology
-//Move the General Summary to 2nd place in row
 //Greek and Latin alphabets need to be in
 
 //Make little tab on top of that will show up when a character in the carousel is highlighted. It will display the script title and the respective time period 
