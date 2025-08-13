@@ -1,36 +1,31 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Alephbeyt
 
-## Getting Started
+Alephbeyt is an interactive linguistic resource that allows users to explore and compare characters across multiple historical scripts through a dynamic interface. Made in association with ***Learning Inspired***, this is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app), the content is managed through the [Sanity.io](https://www.sanity.io/) CMS , and deployed using the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js. [8-13-2025]
 
-First, run the development server:
+## User-end
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Go to [https://www.alephbeyt.org/](https://www.alephbeyt.org/) to view the site. Switching the script will play a short die animation that will change the faces presenting the characters or of the script's respective alphabet. Each character is classified as labeled: Aleph, Beyt, Gimel, etc... Clicking on the die will open a modal that presents information on the character, including the etymology, definitions, and symbolic associations. This is just one of the available functions of the site; soon I will implement a map modal that shows the origins of the selected script, and other modals that enhance the interactive learning experience.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Structure
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**Saniti.io Schemas:**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **script** - contains language/script information, and an array of **letter**s that represents the characters of the  script's alphabet.
 
-## Learn More
+- **letter** - contains a **letterStats**, summaries, definitions, and an image presentation composed of an array of **presImage**s
 
-To learn more about Next.js, take a look at the following resources:
+- **letterStats** - this schema contains all linguistic stats of it's respective letter.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **presImage** - this schema stores and image url and a description to be rendered along with it.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+**Front End:**
 
-## Deploy on Vercel
+- All of the mentioned schemas have a front-end type object counterpart that is sourced from *next-alephbeyt/types/*
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- *next-alephbeyt/sanity/sanity-utils.ts* is responsible for fetching the structured information from the schemas and constructing the types where information will be sourced from.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- *next-alephbeyt/app/admin/* contains the page where devs can upload/edit the content of the site. 
+
+- *next-alephbeyt/app/components/* is where the magic happens. The dice are rendered and given functionality and animations responsive to user interaction.
+
+- *next-alephbeyt/public/* contains the static assets that the site uses. This is information that we don't need to have stored in Sanity.io, like fonts, and data structures that define unchanging features of the site like associated character colors, etc.
