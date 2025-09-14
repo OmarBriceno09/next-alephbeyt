@@ -8,9 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import gsap from "gsap";
 import { Script } from "@/types/Script";
 import Carousel from "./Carousel";
-import ModalBlockSnippet from "./ModalBlockSnippet"
 import { LettersSharedRow, ModalDimensions, LetterDisplay, createEmptyLetterDisplay} from '@/types/MetaTypes';
-import { PortableTextBlock } from "next-sanity";
 import LetterBoxSwapDisplay from "./LetterBoxSwapDisplay";
 import ModalBlockList from "./ModalBlockList";
 
