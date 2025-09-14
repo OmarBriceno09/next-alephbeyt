@@ -12,6 +12,7 @@ import ModalBlockSnippet from "./ModalBlockSnippet"
 import { LettersSharedRow, ModalDimensions, LetterDisplay, createEmptyLetterDisplay} from '@/types/MetaTypes';
 import { PortableTextBlock } from "next-sanity";
 import LetterBoxSwapDisplay from "./LetterBoxSwapDisplay";
+import ModalBlockList from "./ModalBlockList";
 
 interface ModalProps {
   scripts: Script [],
@@ -168,7 +169,7 @@ export default function LetterModal({
             <LetterBoxSwapDisplay
               letterDisplayList={letterDisplayList}
               scriptIndex={selectedScriptIndex}
-              SWAPTIME={0.5}
+              SWAPTIME={0.25}
               modalDimensions={modalDimensions}
             />
             {/*Carousel*/}
@@ -199,103 +200,22 @@ export default function LetterModal({
     );
   };
 
-  //Has all Letter info
+  //Okay so I think the ModalBlockSnippets need to be encapsulated by a class that is responsible for swapping the cubes to
+  //have the effect simillar to the Letter Box Swap Display. This will be extremely useful in cases where one script of a letter
+  //has a BlockSnippet for Basic Stats, but the next script over has no BasicStats, meaning the transition has to lead to a blank
   const ModalBody = () => {
-    const script = scripts[selectedScriptIndex]
-    const letter = script.letters?.[letterIndex]; //finds letter here
     return(
-      <div className="ModalBody h-full overflow-y-auto pointer-events-auto">
-        <div 
-          className="flex flex-col items-end space-y-5 justify-start"
-          style={{
-            paddingInline: modalDimensions.start_width*0.3,
-            paddingBlock: modalDimensions.start_width*0.1
-          }}
-        >
-          {letter?.stats && (
-            <ModalBlockSnippet
-              title={"Basic Stats"}
-              saturatedColor={satColor}
-              lightenedColor={litColor}
-              darkenedColor={darkColor}
-              startOpen={true}
-              information={letter.stats}
-              modalDimensions={modalDimensions}
-
-            />
-          )}
-          {letter?.exp_summary && (
-            <ModalBlockSnippet
-              title={"General Summary"}
-              saturatedColor={satColor}
-              lightenedColor={litColor}
-              darkenedColor={darkColor}
-              information={letter.exp_summary as PortableTextBlock[]}
-              modalDimensions={modalDimensions}
-
-            />
-          )}
-          {letter?.ftu_torah && (
-            <ModalBlockSnippet
-              title={"First Time Used in Torah"}
-              saturatedColor={satColor}
-              lightenedColor={litColor}
-              darkenedColor={darkColor}
-              information={letter.ftu_torah as PortableTextBlock[]}
-              modalDimensions={modalDimensions}
-            />
-          )}
-          {letter?.ftu_word && (
-            <ModalBlockSnippet
-              title={"First Time Used at the Beginning of a Word"}
-              saturatedColor={satColor}
-              lightenedColor={litColor}
-              darkenedColor={darkColor}
-              information={letter.ftu_word as PortableTextBlock[]}
-              modalDimensions={modalDimensions}
-            />
-          )}
-          {letter?.definition && (
-            <ModalBlockSnippet
-              title={"Definition"}
-              saturatedColor={satColor}
-              lightenedColor={litColor}
-              darkenedColor={darkColor}
-              information={letter.definition as PortableTextBlock[]}
-              modalDimensions={modalDimensions}
-            />
-          )}
-          {letter?.sym_associations && (
-            <ModalBlockSnippet
-              title={"Symbolic Associations"}
-              saturatedColor={satColor}
-              lightenedColor={litColor}
-              darkenedColor={darkColor}
-              information={letter.sym_associations as PortableTextBlock[]}
-              modalDimensions={modalDimensions}
-            />
-          )}
-          {letter?.psalms119 && (
-            <ModalBlockSnippet
-              title={"Psalms 119"}
-              saturatedColor={satColor}
-              lightenedColor={litColor}
-              darkenedColor={darkColor}
-              information={letter.psalms119 as PortableTextBlock[]}
-              modalDimensions={modalDimensions}
-            />
-          )}
-          {letter?.gramMorph && (
-            <ModalBlockSnippet
-              title={"Grammatical Morphology"}
-              saturatedColor={satColor}
-              lightenedColor={litColor}
-              darkenedColor={darkColor}
-              information={letter.gramMorph as PortableTextBlock[]}
-              modalDimensions={modalDimensions}
-            />
-          )}
-        </div>
+      <div className="ModalBody h-full">
+          <ModalBlockList
+            scriptList={scripts}
+            scriptIndex={selectedScriptIndex}
+            letterIndex={letterIndex}
+            SWAPTIME={0.25}
+            modalDimensions={modalDimensions}
+            satColor={satColor}
+            litColor={litColor}
+            darkColor={darkColor}
+          />
       </div>
     );
   }

@@ -18,7 +18,7 @@ export default function LetterBoxSwapDisplay({
   const[prevIndex, setPrevIndex] = useState<number|null>(null);
   const [isFirstRender, setIsFirstRender] = useState(true);
   
-    useEffect(() => {
+  useEffect(() => {
     if (isFirstRender) {
       setPrevIndex(null); // no animation on first render
       setIsFirstRender(false);
@@ -26,7 +26,6 @@ export default function LetterBoxSwapDisplay({
       setPrevIndex(scriptIndex);
     }
   }, [scriptIndex]);
-
 
   const letterBoxDisplay = (index:number) => {
     if (!letterDisplayList[index]) return;
@@ -78,6 +77,5 @@ export default function LetterBoxSwapDisplay({
 }
 
 //Make the info boxes slide in and out when transitioning from script to
-//Greek and Latin alphabets need to be in
 //Make little tab on top of that will show up when a character in the carousel is highlighted. It will display the script title and the respective time period 
 //Remove note value and Chord
