@@ -15,6 +15,8 @@ export async function getScripts(): Promise<Script[]>{
             title,
             order_index,
             font,
+            left_to_right,
+            array_setup,
             letters[]{
                 letter_name,
                 order_index,
@@ -25,6 +27,7 @@ export async function getScripts(): Promise<Script[]>{
                         url
                     }
                 },
+                letter_color,
                 stats{
                     letter_name,
                     name_pronounced,

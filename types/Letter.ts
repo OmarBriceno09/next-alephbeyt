@@ -17,6 +17,7 @@ export type Letter = {
     display_image: {
         asset?: SanityAsset;
     };
+    letter_color: string;
     stats: LetterStats;
     exp_summary: PortableTextBlock[];
     ftu_torah: PortableTextBlock[];

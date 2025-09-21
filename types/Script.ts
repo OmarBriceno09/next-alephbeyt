@@ -7,6 +7,8 @@ export type Script = {
     title: string;
     order_index: Int16Array;
     font: string;
+    left_to_right: boolean;
+    array_setup: string;
     letters: Letter[];
     exp_summary: PortableTextBlock[];
 }
@@ -17,6 +19,8 @@ export const createEmptyScript = (): Script => ({
     title: "",
     order_index: new Int16Array(),
     font: "",
+    left_to_right: false,
+    array_setup: "7,3,7",
     letters: [],
     exp_summary: [],
   });

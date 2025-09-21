@@ -44,6 +44,16 @@ function getNeighborScripts(scripts: Script[], newScript_title: string, total: n
     return neighbors;
 }
 
+function stringToArraySetup( numberString: string | null | undefined ): number[] {
+    const defaultArr = [7, 3, 7];
+    const intArray = (numberString ?? "")
+        .split(',')
+        .map(Number)
+        .filter(item => !isNaN(item));
+    
+    return (numberString!=null ||numberString!=undefined) ? intArray : defaultArr;
+}
+
 function getDiceOpenPosition(selectedBound: DOMRect, row: number){
     const rowD = document.querySelector('[data-row="0"]');
 
@@ -93,6 +103,7 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
     const [shareddata, setSharedData] = useState<LettersSharedRow[]>([]);
     const [selectedScriptIndex, setSelectedScriptIndex] = useState<number>(-1);
     const [scriptFaces, setScriptFaces] = useState<Script[]>([]);
+    const [intArraySetup, setIntArraySetup] = useState<number[]>([7,3,7]);
 
     //keep this one
     useEffect(() => {
@@ -113,12 +124,14 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
     //gets initial faces and projects them on die
     useEffect(() => {
         if (scriptOptions.length > 0 && selectedScriptIndex<0) {
-        const initialFaces = getNeighborScripts(scripts, scriptOptions[0], 5);
-        initialFaces.unshift(scripts[0]);
-        setScriptFaces(initialFaces);
-        setSelectedScriptIndex(0); // default to first option
+            const initialFaces = getNeighborScripts(scripts, scriptOptions[0], 5);
+            initialFaces.unshift(scripts[0]);
+            setScriptFaces(initialFaces);
+            setSelectedScriptIndex(0); // default to first option
+            //To set up initial "7,3,7" or other Int Array Setup
+            setIntArraySetup(stringToArraySetup(scripts[0].array_setup))
         }
-    }, [scriptOptions, selectedScriptIndex]);
+    }, [scriptOptions, selectedScriptIndex, intArraySetup]);
 
 
     const handleScriptChange = async (newScriptIndex: number) => {//leave as str
@@ -127,8 +140,11 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
         setTitleKey(newScriptIndex);//setting new title
         setSelectedScriptIndex(newScriptIndex);
 
+        setIntArraySetup(stringToArraySetup(scripts[newScriptIndex].array_setup));
+
         const faceIndex = scriptFaces.findIndex(script => script.title === newScriptStr);
         if (scriptFaces.some(script => script.title === newScriptStr)){//like includes
+            
             console.log("current face" ,Faces[faceIndex]);
             await handleRotateTo(faceRotationMap[faceIndex], SWITCHROTTIME);//rotate to index
         }
