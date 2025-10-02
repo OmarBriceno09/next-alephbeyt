@@ -141,6 +141,7 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
         setSelectedScriptIndex(newScriptIndex);
 
         setIntArraySetup(stringToArraySetup(scripts[newScriptIndex].array_setup));
+        console.log(intArraySetup);
 
         const faceIndex = scriptFaces.findIndex(script => script.title === newScriptStr);
         if (scriptFaces.some(script => script.title === newScriptStr)){//like includes

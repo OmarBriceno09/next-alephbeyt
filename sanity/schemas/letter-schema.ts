@@ -7,7 +7,7 @@ const letter = {
     fields: [
         { name: 'letter_name', title: 'Letter Name', type: 'string' },
         { name: 'order_index', title:'Order Index', type:'number',},
-        { name: 'display', title: 'Dis8play Character (Text)', type: 'string' },
+        { name: 'display', title: 'Display Character (Text)', type: 'string' },
         {
             name:'display_image',
             title: 'Display Image',
