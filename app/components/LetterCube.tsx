@@ -16,7 +16,7 @@ function renderFace(
     return (
       <div
         className={`face ${faceName}`}
-        style={{ backgroundColor: sData.key_color || "#f5f5f5" }}
+        style={{ backgroundColor: letter.letter_color || "#f5f5f5" }}
         key={faceName}
       >
             {letter.display_image?.asset?.url ? (
