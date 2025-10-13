@@ -45,7 +45,7 @@ function getNeighborScripts(scripts: Script[], newScript_title: string, total: n
 }
 
 function stringToArraySetup( numberString: string | null | undefined ): number[] {
-    const defaultArr = [7, 3, 7];
+    const defaultArr = [7, 8, 7];
     const intArray = (numberString ?? "")
         .split(',')
         .map(Number)
@@ -103,7 +103,7 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
     const [shareddata, setSharedData] = useState<LettersSharedRow[]>([]);
     const [selectedScriptIndex, setSelectedScriptIndex] = useState<number>(-1);
     const [scriptFaces, setScriptFaces] = useState<Script[]>([]);
-    const [intArraySetup, setIntArraySetup] = useState<number[]>([7,3,7]);
+    const [intArraySetup, setIntArraySetup] = useState<number[]>([7,8,7]);
 
     //keep this one
     useEffect(() => {
@@ -128,7 +128,7 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
             initialFaces.unshift(scripts[0]);
             setScriptFaces(initialFaces);
             setSelectedScriptIndex(0); // default to first option
-            //To set up initial "7,3,7" or other Int Array Setup
+            //To set up initial "7,8,7" or other Int Array Setup
             setIntArraySetup(stringToArraySetup(scripts[0].array_setup))
         }
     }, [scriptOptions, selectedScriptIndex, intArraySetup]);
@@ -185,7 +185,7 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
     //splitting characters from groq... might remove later to just stick with csv
     //using set 7-8-7 pattern
     //const numletters = selectedScript?.letters.length;
-    const rows = [7,8,7];
+    //const rows = [7,8,7];// intArraySetup
     const cubeRefs = useRef<HTMLDivElement[][]>([]);
     const selCubeCont = useRef<HTMLDivElement| null> (null);
 
@@ -410,7 +410,7 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
                 </select>
             </div>
             <div className=" py-5 flex flex-col [gap:clamp(1.2rem,2.75vw,2rem)]">
-                {rows.map((rowCount, i) => (
+                {intArraySetup.map((rowCount, i) => (
                     <div 
                         key={i}
                         className="flex flex-row-reverse justify-center [gap:clamp(1.2rem,2.75vw,2rem)]"

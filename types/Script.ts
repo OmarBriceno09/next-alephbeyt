@@ -20,7 +20,7 @@ export const createEmptyScript = (): Script => ({
     order_index: new Int16Array(),
     font: "",
     left_to_right: false,
-    array_setup: "7,3,7",
+    array_setup: "7,8,7",
     letters: [],
     exp_summary: [],
   });
