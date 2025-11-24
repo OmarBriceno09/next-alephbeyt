@@ -14,6 +14,7 @@ export interface ModalDimensions{
     end_center: [number, number]; 
 }
 
+
 export const createEmptyModalDims = (): ModalDimensions => ({
     start_width: 0,
     start_height: 0,

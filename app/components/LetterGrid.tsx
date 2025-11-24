@@ -1,12 +1,11 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useState, useRef, useLayoutEffect } from 'react';
+import { useEffect, useState, useRef, useLayoutEffect, SetStateAction } from 'react';
 import gsap from "gsap";
 import LetterCube from './LetterCube';
 import { Script } from '@/types/Script';
 import { LettersSharedRow, ModalDimensions, createEmptyModalDims } from '@/types/MetaTypes';
-import Papa from 'papaparse';
 
 enum Faces{
     front,
@@ -100,49 +99,137 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
 
     //*----------------------------------------------------------------- */
     //FontSwitcher var declarations
-    const [shareddata, setSharedData] = useState<LettersSharedRow[]>([]);
     const [selectedScriptIndex, setSelectedScriptIndex] = useState<number>(-1);
     const [scriptFaces, setScriptFaces] = useState<Script[]>([]);
-    const [intArraySetup, setIntArraySetup] = useState<number[]>([7,8,7]);
+    const [scriptOptions, setScriptOptions] = useState<string[]>([]);
 
-    //keep this one
-    useEffect(() => {
-        fetch('/data/LettersShared.csv')
-            .then(res => res.text())
-            .then(csv => {
-            const parsed = Papa.parse<LettersSharedRow>(csv, {
-                header: true,
-                skipEmptyLines: true,
-            });
-            setSharedData(parsed.data);
-        });
-
-    }, []);
-
-    const scriptOptions = Array.from(new Set(scripts.map(script => script.title)));
+    const cubeRefs = useRef<HTMLDivElement[]>([]); // I don't need this to be a 2d array, cause the cube refs list will be dynamic :||
+    const selCubeCont = useRef<HTMLDivElement| null> (null);
+    const intArraySetup = useRef<number[]>([7,8,7]);
+    const diePositions = useRef<{ x: number; y: number; }[]>([]);
+    //const scriptOptions = Array.from(new Set(scripts.map(script => script.title)));
     
     //gets initial faces and projects them on die
     useEffect(() => {
+        if (scriptOptions.length == 0){
+            setScriptOptions(Array.from(new Set(scripts.map(script => script.title))));
+        }
         if (scriptOptions.length > 0 && selectedScriptIndex<0) {
+            defineInitialDiePosition(1500);
+            
             const initialFaces = getNeighborScripts(scripts, scriptOptions[0], 5);
             initialFaces.unshift(scripts[0]);
             setScriptFaces(initialFaces);
             setSelectedScriptIndex(0); // default to first option
             //To set up initial "7,8,7" or other Int Array Setup
-            setIntArraySetup(stringToArraySetup(scripts[0].array_setup))
+            intArraySetup.current = stringToArraySetup(scripts[0].array_setup);
         }
     }, [scriptOptions, selectedScriptIndex, intArraySetup]);
 
 
+    //This will only be called once, and it will declare the initial positions of the die based on the screen size and pattern
+    const defineInitialDiePosition = (screenscale: number) => {
+        let startPos: { x: number; y: number; }[] = [];
+        const spacing = screenscale/10;
+        intArraySetup.current.forEach((rowlen: number, rownum: number) =>{
+            for(var i=0; i<rowlen; i++){
+                startPos.push({x:i*spacing, y:rownum*spacing});
+            }
+        });
+        //console.log(startPos);
+        diePositions.current = startPos;
+    };
+
+
+    //Move individual die lerp:
+    const lerpMoveDie = (cubeEl:HTMLDivElement, targetPos:{x:number, y:number})=>{
+        return new Promise<void>((resolve) => {
+            gsap.to(cubeEl, {
+                x: targetPos.x,
+                y: targetPos.y,
+                duration: 0.2,
+                ease: "power2.inOut",
+                onComplete:() => resolve(),
+            });
+        });
+    };
+
+    const shiftMoveDice = async (positions: { x: number; y: number }[], cubeRefs: HTMLDivElement[]) => {
+        for (let i = 0; i < cubeRefs.length; i++) {
+            const cube = cubeRefs[i];
+            const pos = positions[i];
+            if (!cube) continue;
+            await lerpMoveDie(cube, pos); // Wait for each die before moving the next
+        }
+        console.log("All dice finished lerping");
+    };
+    //call this when the script has switched
+    //Okay, it seems to be doing it right, the issue, is that diePositions isn't changing because I haven't
+    //set up the animation for it. The sequence of the code should be the following:
+    //1. set diePositions to startPos
+    //2. feed endPos to a function that lerps diePositions to it
+    //3. done
+
+    const getStartAndEndPositions = (screenscale: number): 
+    Promise<[
+        sAP: { x: number; y: number; }[], 
+        eAP: { x: number; y: number; }[],
+        fP: { x: number; y: number; }[]
+    ]> => {
+        return new Promise((resolve) =>{
+            let startAnimPos = diePositions.current.map(pos => ({...pos})); //shallow copy
+            let endAnimPos: { x: number; y: number; }[] = [];
+            const spacing = screenscale/10;
+
+            //gets new positions
+            //console.log("intArraySetup: ", intArraySetup)
+            intArraySetup.current.forEach((rowlen: number, rownum: number) =>{
+                for(var i=0; i<rowlen; i++){
+                    endAnimPos.push({x:i*spacing, y:rownum*spacing});
+                }
+            });
+            //console.log("endpos len: ", endPos.length)
+            let finalPos = endAnimPos.map(pos => ({...pos})); //finalPosition, before after animation ends
+        
+            if(endAnimPos.length < startAnimPos.length){
+                console.log("removing die");
+                for(var j=0; j<startAnimPos.length; j++){
+                    if(j>=endAnimPos.length){
+                        endAnimPos.push({x:startAnimPos[j].x, y:1000});
+                    }
+                }
+            } else{
+                console.log("same or adding")
+                for(var j=0; j<endAnimPos.length; j++){
+                    if(j>=startAnimPos.length){
+                        startAnimPos.push({x:endAnimPos[j].x, y:1000});
+                    }
+                }
+            }
+            resolve([startAnimPos, endAnimPos, finalPos]);
+        });
+    };
+
     const handleScriptChange = async (newScriptIndex: number) => {//leave as str
         const newScriptStr = scripts[newScriptIndex].title;
+
+        intArraySetup.current = stringToArraySetup(scripts[newScriptIndex].array_setup);
+        console.log("handleScriptChange: \n",intArraySetup.current);
+
+
+        //end and start animPos should match in numcount, but finalPos resets to the correct num of characters.
+        const [startAnimPos, endAnimPos, finalPos] = await getStartAndEndPositions(700);
+        console.log(startAnimPos, endAnimPos, finalPos);
+        diePositions.current = startAnimPos;
+        await Promise.all(
+            cubeRefs.current.map((cube, i) => lerpMoveDie(cube, endAnimPos[i]))
+        );
+        diePositions.current = finalPos;
 
         setTitleKey(newScriptIndex);//setting new title
         setSelectedScriptIndex(newScriptIndex);
 
-        setIntArraySetup(stringToArraySetup(scripts[newScriptIndex].array_setup));
-        console.log(intArraySetup);
-
+        //console.log("handleScriptChange: ",scripts[newScriptIndex]);
         const faceIndex = scriptFaces.findIndex(script => script.title === newScriptStr);
         if (scriptFaces.some(script => script.title === newScriptStr)){//like includes
             
@@ -179,15 +266,15 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
         }
         // Optionally store it in state if needed elsewhere
         //setSelectedScriptIndex(newScriptIndex);
-    }
+
+
+    };
     //*----------------------------------------------------------------- */
   
     //splitting characters from groq... might remove later to just stick with csv
     //using set 7-8-7 pattern
     //const numletters = selectedScript?.letters.length;
     //const rows = [7,8,7];// intArraySetup
-    const cubeRefs = useRef<HTMLDivElement[][]>([]);
-    const selCubeCont = useRef<HTMLDivElement| null> (null);
 
     const [selectedLetterIndex, setSelectedLetterIndex] = useState<number>(-1);
     const moveLeftCubesCoords = useRef<Array<[number, number]>>([]);
@@ -196,9 +283,9 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [canHoverAnim, setCanHoverAnim] = useState(true);// allows die hoverAnim (expand when hovered)
     const [letterModalDimensions, setLetterModalDimensions] = useState<ModalDimensions>(createEmptyModalDims());
-    
-    useLayoutEffect(() => {
 
+
+    useEffect(() => {
         handleRotateTo({x:360, y:360}, ENTERROTATIONTIME);
     }, []);
 
@@ -255,7 +342,7 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
                 duration: time, 
                 ease: "power2.out" });
         }
-      };
+    };
       
     const handleMouseLeave = (el: HTMLDivElement, time:number): Promise<void> => {
         return new Promise((resolve) => {
@@ -277,12 +364,30 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
             }
         });
     };
+
+    const waitForCubeRefs = (
+        refs: React.MutableRefObject<HTMLDivElement[]>, 
+        interval = 50
+    ): Promise<void> => {
+        return new Promise((resolve) =>{
+            const check = () => {
+                if(refs.current.length != 0)
+                    resolve();
+                else
+                    setTimeout(check, interval);
+            }
+            check();
+        });
+    };
+    
     
     const handleRotateTo = async (angle: {x: number; y: number}, duration: number) => {
         setAllowModalClick(false); //can't open while rolling
 
-        const flatRefs = cubeRefs.current.flat();
-        const rollPromises = flatRefs.map((cube, i) => {
+        if (cubeRefs.current.length == 0)// await if arr len is 0
+            await waitForCubeRefs(cubeRefs);
+        
+        const rollPromises = cubeRefs.current.map((cube, i) => {
             if (!cube) return Promise.resolve();
             const delay = i * 0.01;
             return rollCube(cube, delay, duration, angle);//360,360
@@ -292,6 +397,7 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
         if (!isModalOpen)
             setAllowModalClick(true); // now able to
     };
+
 
     const moveDiceToOpenPos = (selDie: HTMLDivElement, time: number) => {
         const row = parseInt(selDie.dataset.row!);
@@ -307,12 +413,13 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
             end_center: [middleMove,modalYMove] });
 
         //console.log(moveLeft,moveRight)
-        moveLeftCubesCoords.current.forEach(([i,j])=> {
+        //Don't move die for now, working on cubeRef refactoring
+        /*moveLeftCubesCoords.current.forEach(([i,j])=> {
             translateCube(cubeRefs.current[i][j], time, {x:moveLeft,y:0});
         });
         moveRightCubesCoords.current.forEach(([i,j])=> {
             translateCube(cubeRefs.current[i][j], time, {x:moveRight,y:0});
-        });
+        });*/
     };
 
     useEffect(() => { // for scaling open cubes
@@ -338,7 +445,7 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
         setAllowModalClick(false);
         setIsModalOpen(true);
         
-        cubeRefs.current.forEach((cbrow, i) => {
+        /*cubeRefs.current.forEach((cbrow, i) => {
             cbrow.forEach((_, j) => {
                 if (i === row && j === col) return; //skips if same as clicked letter
                 const isLeft = (row%2==0) ? j > col : j >= col;//if row is even
@@ -349,7 +456,7 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
                     moveRightCubesCoords.current.push([i,j]);
                 }
             })
-        });
+        });*/
         moveDiceToOpenPos(el, MODALOPENTIME); //open in 0.5 seconds
     };
 
@@ -372,7 +479,6 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
         moveRightCubesCoords.current = [];
     };
 
-    let letterIndex = -1;
     return (
         <div className="justify-center">
             {/* Title */}
@@ -409,48 +515,45 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
                     ))}
                 </select>
             </div>
-            <div className=" py-5 flex flex-col [gap:clamp(1.2rem,2.75vw,2rem)]">
-                {intArraySetup.map((rowCount, i) => (
-                    <div 
-                        key={i}
-                        className="flex flex-row-reverse justify-center [gap:clamp(1.2rem,2.75vw,2rem)]"
-                        data-row={i}
-                    >
-                        {Array.from({ length: rowCount }).map((_, j) => {
-                            letterIndex++;
-                            const cubeId = `cubewrapper-${letterIndex}`;
+            <div className="py-5 absolute w-full h-full">
+                
+                {diePositions.current.map(({x,y}, i)=>{
+                    const cubeId = `cubewrapper-${i}`;
                            
-                            const rowStr = selCubeCont.current?.dataset.row;
-                            const selRow = rowStr !== undefined ? parseInt(rowStr) : -1;
-                            const colStr = selCubeCont.current?.dataset.col;
-                            const selCol = colStr !== undefined ? parseInt(colStr) : -1;
-                            const isSelected = (selRow === i && selCol=== j);
+                    /*const rowStr = selCubeCont.current?.dataset.row;
+                    const selRow = rowStr !== undefined ? parseInt(rowStr) : -1;
+                    const colStr = selCubeCont.current?.dataset.col;
+                    const selCol = colStr !== undefined ? parseInt(colStr) : -1;
+                    const isSelected = (selRow === i && selCol=== j);*/
 
-                            return (
-                                <LetterCube
-                                    key={`LetterCube-${letterIndex}`}
-                                    cubeId={cubeId}
-                                    shareddata={shareddata}
-                                    scripts={scripts}
-                                    scriptFaces={scriptFaces}
-                                    selectedScriptIndex={selectedScriptIndex}
-                                    letterIndex={letterIndex}
-                                    modalDimensions={letterModalDimensions}
-                                    row={i}
-                                    col={j}
-                                    onClick={handleOnLetterClick}
-                                    allowModalClick={allowModalClick}
-                                    handleMouseEnter={handleMouseEnter}
-                                    handleMouseLeave={handleMouseLeave}
-                                    cubeRefs={cubeRefs}
-                                    isSelected={isSelected}
-                                    onClose={handleOnCloseLetter}
-                                    scriptChange={handleScriptChange}
-                                />
-                            );
-                        })}
-                    </div>
-                ))}
+                    return(
+                        <div
+                            key={i}
+                            className="absolute transition-transform duration-500"
+                            style={{
+                                transform: `translate(${x}px, ${y}px)`,
+                            }}
+                        >
+                            <LetterCube
+                                key={`LetterCube-${i}`}
+                                cubeId={cubeId}
+                                scripts={scripts}
+                                scriptFaces={scriptFaces}
+                                selectedScriptIndex={selectedScriptIndex}
+                                letterIndex={i}
+                                modalDimensions={letterModalDimensions}
+                                onClick={handleOnLetterClick}
+                                allowModalClick={allowModalClick}
+                                handleMouseEnter={handleMouseEnter}
+                                handleMouseLeave={handleMouseLeave}
+                                cubeRefs={cubeRefs}
+                                isSelected={false}
+                                onClose={handleOnCloseLetter}
+                                scriptChange={handleScriptChange}
+                            />
+                        </div>
+                    );
+                })}
             </div>
         </div>
     );

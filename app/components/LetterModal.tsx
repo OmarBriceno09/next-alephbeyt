@@ -8,7 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import gsap from "gsap";
 import { Script } from "@/types/Script";
 import Carousel from "./Carousel";
-import { LettersSharedRow, ModalDimensions, LetterDisplay, createEmptyLetterDisplay} from '@/types/MetaTypes';
+import { ModalDimensions, LetterDisplay, createEmptyLetterDisplay} from '@/types/MetaTypes';
 import LetterBoxSwapDisplay from "./LetterBoxSwapDisplay";
 import ModalBlockList from "./ModalBlockList";
 
@@ -16,7 +16,6 @@ interface ModalProps {
   scripts: Script [],
   selectedScriptIndex: number,
   letterIndex: number,
-  shareddata: LettersSharedRow[],
   isSelected: boolean,
   modalDimensions: ModalDimensions,
   onClose: () => void;
@@ -27,7 +26,6 @@ export default function LetterModal({
   scripts, 
   selectedScriptIndex,
   letterIndex, 
-  shareddata,
   isSelected,
   modalDimensions,
   onClose,
@@ -39,6 +37,9 @@ export default function LetterModal({
   const [satColor, setSatColor] = useState<string>("");
   const [litColor, setLitColor] = useState<string>("");
   const [darkColor, setDarkColor] = useState<string>("");
+
+  const script = scripts[selectedScriptIndex]
+  const letter = script.letters?.[letterIndex];
 
 
   //console.log("hello?: "(modalDimensions));
@@ -145,17 +146,15 @@ export default function LetterModal({
         letterList.push(newletter);
       });
       setLetterDisplayList(letterList);
-      setSatColor(Color(shareddata[letterIndex].key_color).hsl().saturationl(80).lightness(40).rgb().string());
-      setLitColor(Color(shareddata[letterIndex].key_color).hsl().saturationl(85).lightness(85).rgb().string());
-      setDarkColor(Color(shareddata[letterIndex].key_color).hsl().saturationl(80).lightness(20).rgb().string());
+      setSatColor(Color(letter.letter_color).hsl().saturationl(80).lightness(40).rgb().string());
+      setLitColor(Color(letter.letter_color).hsl().saturationl(85).lightness(85).rgb().string());
+      setDarkColor(Color(letter.letter_color).hsl().saturationl(80).lightness(20).rgb().string());
     } else {
       console.log("list exists");
     }
   }
 
   const ModalHeader = () => {
-    const script = scripts[selectedScriptIndex]
-    const letter = script.letters?.[letterIndex];
 
     return(
         <div 
@@ -228,7 +227,7 @@ export default function LetterModal({
             width: modalDimensions.start_width, 
             height: modalDimensions.start_height, 
             pointerEvents: 'none', 
-            backgroundColor: shareddata[letterIndex].key_color || "#f5f5f5" }}
+            backgroundColor: letter.letter_color || "#f5f5f5" }}
         >
           {ModalHeader()}
           

@@ -4,13 +4,12 @@ and invokes Letter Modal when it is clicked. */
 import React from "react";
 import { Letter } from "@/types/Letter";
 import { Script } from "@/types/Script";
-import { LettersSharedRow, ModalDimensions} from '@/types/MetaTypes';
+import { ModalDimensions} from '@/types/MetaTypes';
 import LetterModal from "./LetterModal";
 
 function renderFace(
     faceName: string,
     letter: Letter,
-    sData: LettersSharedRow,
     fontfam: string,
   ) {
     return (
@@ -47,19 +46,16 @@ function renderFace(
 
 interface LetterCubeProps {
     cubeId: string,
-    shareddata: LettersSharedRow[],
     scripts: Script [],
     scriptFaces: Script[],
     selectedScriptIndex: number,
     letterIndex: number,
     modalDimensions: ModalDimensions,
-    row: number,
-    col: number,
     onClick: (letterIndex: number, element: HTMLDivElement) => void;
     allowModalClick: boolean,
     handleMouseEnter: (element: HTMLDivElement, duration: number)=> void;
     handleMouseLeave: (element: HTMLDivElement, duration: number)=> void;
-    cubeRefs: React.RefObject<HTMLDivElement[][]>,
+    cubeRefs: React.RefObject<HTMLDivElement[]>,
     isSelected: boolean,
     onClose: () => void;
     scriptChange: (newScriptIndex: number) => void;
@@ -67,14 +63,11 @@ interface LetterCubeProps {
 
 export default function LetterCube({ 
     cubeId,
-    shareddata,
     scripts, //i need all of the scripts cause I am going to render the multiple variants of letters with respective fonts
     selectedScriptIndex,
     scriptFaces,
     letterIndex,
     modalDimensions,
-    row,
-    col,
     onClick,
     allowModalClick,
     handleMouseEnter,
@@ -88,8 +81,9 @@ export default function LetterCube({
     return (
         <div 
             key={cubeId}
-            data-row={row}
-            data-col={col}
+            //data-row={row} //called with dataset.row
+            //data-col={col}
+            data-index={letterIndex} //maybe delete if useless
             className={`relative z-10 ${allowModalClick ? '' : 'pointer-events-none'}`}// No cursor-pointer here
             onClick={(e) => {
                 if (allowModalClick && letterIndex>=0) {
@@ -103,7 +97,6 @@ export default function LetterCube({
                 scripts={scripts} 
                 selectedScriptIndex = {selectedScriptIndex}
                 letterIndex = {letterIndex} 
-                shareddata = {shareddata}
                 isSelected = {isSelected}
                 modalDimensions = {modalDimensions}
                 onClose = {onClose}
@@ -112,10 +105,11 @@ export default function LetterCube({
 
             <div
                 ref={(el) => {
-                if (!cubeRefs.current[row]) {
+                /*if (!cubeRefs.current[row]) {
                     cubeRefs.current[row] = [];
-                }
-                cubeRefs.current[row][col] = el!;
+                }*/
+                    cubeRefs.current[letterIndex] = el!;
+                    //console.log("hmm??", letterIndex);
                 }}
                 className="cube perspective"
             >
@@ -123,12 +117,19 @@ export default function LetterCube({
                 {["front", "right", "left", "top", "bottom", "back"].map((faceName, faceIndex) => {
                     const script = scriptFaces[faceIndex];
                     const faceLetter = script?.letters?.[letterIndex];
+                        
+                    //if not, then default to zero for now?
                     const font = script?.font || "sans-serif";
-                    const faceShared = shareddata[letterIndex];
-
-                    if (!faceLetter || !faceShared) return null;
-
-                    return renderFace(faceName, faceLetter, faceShared, font);
+                    
+                    //console.log(faceLetter);
+                    if (!faceLetter){
+                        if(script){
+                            return renderFace(faceName, script?.letters?.[0], font);
+                        }
+                        return null;
+                    }
+                    
+                    return renderFace(faceName, faceLetter, font);
                 })}
                 </div>
             </div>
