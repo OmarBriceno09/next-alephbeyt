@@ -51,7 +51,7 @@ const LetterModal = forwardRef<LetterModalHandle, ModalProps>(
   const [letterName, setLetterName] = useState<string>("");
   const [letterColor, setLetterColor] = useState<string>("#f5f5f5");
 
-
+  
   const openExpanAnim = (): Promise<void> => {
     return new Promise((resolve=> {
       gsap.timeline().set(
@@ -87,7 +87,7 @@ const LetterModal = forwardRef<LetterModalHandle, ModalProps>(
   };
 
 
-  const reScaleExpan = () => {
+  /*const reScaleExpan = () => {
     if (expandedFaceRef.current) {
         gsap.set(
             expandedFaceRef.current,
@@ -101,7 +101,7 @@ const LetterModal = forwardRef<LetterModalHandle, ModalProps>(
             }
         );
     }
-  };
+  };*/
 
 
   const closeExpandAnim = (): Promise<void> => {

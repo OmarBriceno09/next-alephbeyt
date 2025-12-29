@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef, useLayoutEffect, SetStateAction } from 'react';
+import { useEffect, useRef } from 'react';
 import gsap from "gsap";
 
 export default function Footer() {
