@@ -217,7 +217,7 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
             for (let i=0; i<rowLen; i++){
                 const offset = i * (dieSize + colGap);
 
-                let x = isLeftToRight ? startX + offset : startX + (totalRowWidth - dieSize - offset);
+                const x = isLeftToRight ? startX + offset : startX + (totalRowWidth - dieSize - offset);
                 const y = rowIndex * (dieSize + rowGap) + rowGap;//additional margin between top of div and die (avoids cutoff)
 
                 if (dieIsSelected && splitIndex<0 && ((isLeftToRight && x>diePx)||(!isLeftToRight && x < diePx)))
@@ -619,8 +619,8 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
                 <AnimatePresence mode="wait">
                     <motion.h1
                     key={titleKey}
-                    initial={{ x: 0, y: "-100%", opacity: 0 }}
-                    animate={{ x: 0, y: 0, opacity: 1 }}
+                    initial={{ y: "-100%", opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
                     exit={{ y: "100%", opacity: 0 }}
                     transition={{ duration: SWITCHROTTIME/2, ease: "easeInOut" }}
                     className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-6 text-center"
