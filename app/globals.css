@@ -36,7 +36,7 @@ body {
 }
 
 .cube {
-  --cube-size: clamp(70px, 8.5vw, 130px);
+  --cube-size: clamp(70px, 8.5svw, 160px);
   --half-cube-size: calc(var(--cube-size) / 2);
  
   width: var(--cube-size);

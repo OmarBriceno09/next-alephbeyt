@@ -15,7 +15,7 @@ interface ModalBlockSnippet {
   lightenedColor: string,
   startOpen?: boolean,
   information: PortableTextBlock[] | LetterStats,
-  modalDimensions: ModalDimensions,
+  modalDimensions: React.RefObject<ModalDimensions>,
 }
 
 function isLetterStats(data:unknown): data is LetterStats {
@@ -137,8 +137,8 @@ export default function LetterModal({
             ref={contentWrapperRef}
             className="h-0 overflow-y-auto"
             style={{
-              width: modalDimensions.end_width*0.6, 
-              //height: modalDimensions.start_height*0.5
+              width: modalDimensions.current.end_width*0.6, 
+              //height: modalDimensions.current.start_height*0.5
             }}
             >
                 {isLetterStats(information) ? (

@@ -6,7 +6,7 @@ import CarouselBox from "./CarouselBox";
 interface CarouselProps {
     selectedScriptIndex: number,
     letterDisplayList: LetterDisplay[]
-    modalDimensions: ModalDimensions,
+    modalDimensions: React.RefObject<ModalDimensions>,
     scriptChange: (newScriptIndex: number) => void;
 }
 
@@ -25,7 +25,7 @@ export default function Carousel({
     const [leftEnd, setLeftEnd] = useState(false);
     
     const startScroll = (direction: "left" | "right") => {
-        const tilesize = modalDimensions.start_width*SMALLUNITPROPORTION;
+        const tilesize = modalDimensions.current.start_width*SMALLUNITPROPORTION;
         const el = scrollRef.current;
         const windowWidth = (el?.clientWidth||1000);
         const maxScrollWidth = tilesize*(letterDisplayList.length+1/2);
@@ -65,7 +65,7 @@ export default function Carousel({
     return (
         <div 
             className="relative overflow-hidden bg-gray-500/20"
-            style={{margin: modalDimensions.start_width*SMALLUNITPROPORTION*0.25}}
+            style={{margin: modalDimensions.current.start_width*SMALLUNITPROPORTION*0.25}}
             
         >
             <div 
@@ -87,7 +87,7 @@ export default function Carousel({
                       : 'linear-gradient(to right, black, transparent)',
                     maskRepeat: 'no-repeat',
                     maskSize: '100% 100%',
-                    width: modalDimensions.start_width * SMALLUNITPROPORTION * 0.5
+                    width: modalDimensions.current.start_width * SMALLUNITPROPORTION * 0.5
                   }}
                 />
 
@@ -102,7 +102,7 @@ export default function Carousel({
                       : 'linear-gradient(to left, black, transparent)',
                     maskRepeat: 'no-repeat',
                     maskSize: '100% 100%',
-                    width:modalDimensions.start_width*SMALLUNITPROPORTION*0.5
+                    width:modalDimensions.current.start_width*SMALLUNITPROPORTION*0.5
                 }}
                 />
                 {/*Carousel*/}
@@ -117,7 +117,7 @@ export default function Carousel({
                             scaletype={"die-scale-small"}
                             index={index}
                             selectedIndex={selectedScriptIndex}
-                            dimensions={{x: modalDimensions.start_width*SMALLUNITPROPORTION, y: modalDimensions.start_height*SMALLUNITPROPORTION}}
+                            dimensions={{x: modalDimensions.current.start_width*SMALLUNITPROPORTION, y: modalDimensions.current.start_height*SMALLUNITPROPORTION}}
                             scriptChange = {scriptChange}
                         />);
                     })}

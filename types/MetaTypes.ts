@@ -10,8 +10,8 @@ export interface ModalDimensions{
     start_height: number;
     end_width: number;
     end_height: number;
-    start_center: [number, number];
-    end_center: [number, number]; 
+    start_pos: [number, number];
+    end_pos: [number, number]; 
 }
 
 
@@ -20,8 +20,8 @@ export const createEmptyModalDims = (): ModalDimensions => ({
     start_height: 0,
     end_width: 0,
     end_height: 0,
-    start_center: [0, 0],
-    end_center: [0, 0]
+    start_pos: [0, 0],
+    end_pos: [0, 0]
   });
 
 export interface LetterDisplay{

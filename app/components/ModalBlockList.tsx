@@ -14,7 +14,7 @@ type ModalBlockListProps = {
     scriptIndex: number,
     letterIndex: number,
     SWAPTIME: number,
-    modalDimensions: ModalDimensions,
+    modalDimensions: React.RefObject<ModalDimensions>,
     satColor:string,
     litColor:string,
     darkColor:string
@@ -71,7 +71,8 @@ export default function ModalBlockList({
     const[selLetter, setSelLetter] = useState<Letter|null>(null);
     
     useEffect(() => {
-        setSelLetter(scriptList[scriptIndex].letters?.[letterIndex]);
+        if (scriptList[scriptIndex])
+            setSelLetter(scriptList[scriptIndex].letters?.[letterIndex]);
         console.log("changing to: ", scriptIndex);
     }, [scriptIndex, letterIndex]);
 
@@ -87,8 +88,8 @@ export default function ModalBlockList({
             exit="exit"
             transition={{ duration: SWAPTIME, ease: "easeInOut" }}
             style={{
-                paddingInline: modalDimensions.start_width * 0.3,
-                paddingBlock: modalDimensions.start_width * 0.1,
+                paddingInline: modalDimensions.current.start_width * 0.3,
+                paddingBlock: modalDimensions.current.start_width * 0.1,
             }}
             >
             {snippetConfigs.map(({ key, title, startOpen }) => {

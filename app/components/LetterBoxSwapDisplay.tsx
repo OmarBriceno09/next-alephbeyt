@@ -6,7 +6,7 @@ interface LetterBoxSwapDisplayProps {
     letterDisplayList: LetterDisplay[],
     scriptIndex: number,
     SWAPTIME: number,
-    modalDimensions: ModalDimensions,
+    modalDimensions: React.RefObject<ModalDimensions>
   }
 
 export default function LetterBoxSwapDisplay({
@@ -54,8 +54,8 @@ export default function LetterBoxSwapDisplay({
   return(
     <div
       style={{ 
-        width: modalDimensions.start_width, 
-        height: modalDimensions.start_height,
+        width: modalDimensions.current.start_width, 
+        height: modalDimensions.current.start_height,
         position: "relative",
       }}
       className="flex items-center justify-center shrink-0"

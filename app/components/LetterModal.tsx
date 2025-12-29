@@ -2,9 +2,9 @@
 in the future. It is invoked only by LetterCube.tsx whenever a user clicks on the cube, and it closes when the user clicks on the X */
 
 //For future optimizing. There will only ever be one modal open at a time, so why don't I use one modal, hide it when closed, and when opened again, change the information?
-import React from "react";
+import React, { forwardRef, useImperativeHandle } from "react";
 import Color from 'color';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import gsap from "gsap";
 import { Script } from "@/types/Script";
 import Carousel from "./Carousel";
@@ -15,71 +15,87 @@ import ModalBlockList from "./ModalBlockList";
 interface ModalProps {
   scripts: Script [],
   selectedScriptIndex: number,
-  letterIndex: number,
-  isSelected: boolean,
-  modalDimensions: ModalDimensions,
+  modalDimensions: React.RefObject<ModalDimensions>,
   onClose: () => void;
   scriptChange: (newScriptIndex: number) => void;
 }
 
-export default function LetterModal({ 
-  scripts, 
-  selectedScriptIndex,
-  letterIndex, 
-  isSelected,
-  modalDimensions,
-  onClose,
-  scriptChange
-}: ModalProps) {
+export type LetterModalHandle = {
+  openExpanAnim: () => Promise<void>;
+  closeExpandAnim: () => Promise<void>;
+  declareLetterMeta: (newIndex:number) => Promise<void>;
+
+};
+
+const LetterModal = forwardRef<LetterModalHandle, ModalProps>(
+  (
+    {
+      scripts, 
+      selectedScriptIndex,
+      modalDimensions,
+      onClose,
+      scriptChange
+    },
+    ref
+  ) => {
+
+  const modalRef = useRef<HTMLDivElement> (null);
+
   const expandedFaceRef = useRef<HTMLDivElement>(null);
-  const [isOpen, setIsOpen] = useState<boolean>(false);
   const [letterDisplayList, setLetterDisplayList] = useState<LetterDisplay[]>([]);
+  const [letterIndex, setLetterIndex] = useState<number>(-1);
   const [satColor, setSatColor] = useState<string>("");
   const [litColor, setLitColor] = useState<string>("");
   const [darkColor, setDarkColor] = useState<string>("");
 
-  const script = scripts[selectedScriptIndex]
-  const letter = script.letters?.[letterIndex];
+  const [letterName, setLetterName] = useState<string>("");
+  const [letterColor, setLetterColor] = useState<string>("#f5f5f5");
 
 
-  //console.log("hello?: "(modalDimensions));
-  const openExpanAnim = () => {
-      if (expandedFaceRef.current) {
-          const tl = gsap.timeline();
-          tl.to(
-              expandedFaceRef.current,
-              {
-                  width: modalDimensions.end_width,
-                  height: modalDimensions.start_height,
-                  x: modalDimensions.end_center[0],
-                  duration: 0.5,
-                  ease: "power2.out",
+  const openExpanAnim = (): Promise<void> => {
+    return new Promise((resolve=> {
+      gsap.timeline().set(
+        expandedFaceRef.current,
+          {
+              width: modalDimensions.current.start_width,
+              height: modalDimensions.current.start_height,
+              x: modalDimensions.current.start_pos[0],
+              y: modalDimensions.current.start_pos[1]
+          }
+      ).to(
+          expandedFaceRef.current,
+          {
+              width: modalDimensions.current.end_width,
+              height: modalDimensions.current.start_height,
+              x: modalDimensions.current.end_pos[0],// + modalDimensions.current.start_width,
+              duration: 0.5,
+              ease: "power2.out",
+          }
+      ).to(
+          expandedFaceRef.current,
+          {
+              height: modalDimensions.current.end_height,
+              y:modalDimensions.current.end_pos[1],
+              duration: 0.25,
+              ease: "power2.out",
+              onComplete: () =>  {
+                  resolve();
               }
-          ).to(
-              expandedFaceRef.current,
-              {
-                  height: modalDimensions.end_height,
-                  y:modalDimensions.end_center[1],
-                  duration: 0.25,
-                  ease: "power2.out",
-                  onComplete: () =>  {
-                      setIsOpen(true);
-                  }
-              }
-          );
-      }
+          }
+      );
+    }))
   };
 
+
   const reScaleExpan = () => {
-    //console.log(modalDimensions);
     if (expandedFaceRef.current) {
         gsap.set(
             expandedFaceRef.current,
             {
-                width: modalDimensions.end_width,
-                height: modalDimensions.end_height,
-                x: modalDimensions.end_center[0],
-                y: modalDimensions.end_center[1],
+                width: modalDimensions.current.end_width,
+                height: modalDimensions.current.end_height,
+                x: modalDimensions.current.end_pos[0],
+                y: modalDimensions.current.end_pos[1],
                 ease: "power2.out",
 
             }
@@ -87,75 +103,77 @@ export default function LetterModal({
     }
   };
 
-  const closeExpandAnim = () => {
-      if(expandedFaceRef.current) {
-          const tl = gsap.timeline();
-          tl.to(
-              expandedFaceRef.current,
-              {
-                  height: modalDimensions.start_height,
-                  y: modalDimensions.start_center[1],
-                  duration: 0.25,
-                  ease: "power2.out",
-                  onComplete: () =>  {
-                      onClose();
-                  }
-              }
-          ).to(
-              expandedFaceRef.current,
-              {
-                  width: modalDimensions.start_width,
-                  x: modalDimensions.start_center[0],
-                  duration: 0.5,
-                  ease: "power2.out",
-              }
-          );
-      } else {
-          onClose();
-      }
+
+  const closeExpandAnim = (): Promise<void> => {
+    return new Promise((resolve=> {
+      gsap.timeline().to(
+        expandedFaceRef.current,
+        {
+          height: modalDimensions.current.start_height,
+          y: modalDimensions.current.start_pos[1],
+          duration: 0.25,
+          ease: "power2.out",
+          onComplete: () =>  {
+            onClose();
+          }
+        }
+      ).to(
+        expandedFaceRef.current,
+        {
+          width: modalDimensions.current.start_width,
+          x: modalDimensions.current.start_pos[0],
+          duration: 0.5,
+          ease: "power2.out",
+          onComplete: () => {
+            resolve();
+            setLetterIndex(-1); //Setting Letter Index back to -1
+          }
+        }
+      );
+    }))
   };
 
-  useEffect(() => {
-      if(isSelected){
-          if (!isOpen){
-            declareIllustrations();
-            openExpanAnim(); 
-          } else {
-            reScaleExpan();
-          }
+
+  //This function will declare all the illustrations and images right before isOpen is activated
+  const declareLetterMeta = async (newIndex: number) =>{
+    const letterList: React.SetStateAction<LetterDisplay[]> = [];
+    scripts.forEach(sp => {
+      const newLetterEntry = createEmptyLetterDisplay();
+
+      if(sp.letters?.[newIndex].display_image){
+          newLetterEntry.display = sp.letters?.[newIndex].display_image.asset?.url;
+          newLetterEntry.font = "url";
+      } else {
+          newLetterEntry.display = sp.letters?.[newIndex].display;
+          newLetterEntry.font = sp.font;
       }
+      letterList.push(newLetterEntry);
+    });
+    setLetterDisplayList(letterList);
 
-  },[isSelected, modalDimensions]);
+    //Setting Letter color and names
+    const script = scripts[selectedScriptIndex];
+    const newLetter = script?.letters?.[newIndex] || null;
 
+    setLetterColor(newLetter.letter_color);
+    setLetterName(newLetter.letter_name);
+  
+    setSatColor(Color(newLetter.letter_color).hsl().saturationl(80).lightness(40).rgb().string());
+    setLitColor(Color(newLetter.letter_color).hsl().saturationl(85).lightness(85).rgb().string());
+    setDarkColor(Color(newLetter.letter_color).hsl().saturationl(80).lightness(20).rgb().string());
 
-  //This function will generate the display lists and the colors. it will only do this once when its open
-  const declareIllustrations = () =>{
-    if(letterDisplayList.length === 0){
-      const letterList: React.SetStateAction<LetterDisplay[]> = [];
-      scripts.forEach(sp => {
-        //console.log("letter: ", sp.letters?.[letterIndex].display, "; script: ", sp.title);
-        const newletter = createEmptyLetterDisplay();
-
-        if(sp.letters?.[letterIndex].display_image){
-            newletter.display = sp.letters?.[letterIndex].display_image.asset?.url;
-            newletter.font = "url";
-        } else {
-            newletter.display = sp.letters?.[letterIndex].display;
-            newletter.font = sp.font;
-        }
-        letterList.push(newletter);
-      });
-      setLetterDisplayList(letterList);
-      setSatColor(Color(letter.letter_color).hsl().saturationl(80).lightness(40).rgb().string());
-      setLitColor(Color(letter.letter_color).hsl().saturationl(85).lightness(85).rgb().string());
-      setDarkColor(Color(letter.letter_color).hsl().saturationl(80).lightness(20).rgb().string());
-    } else {
-      console.log("list exists");
-    }
+    setLetterIndex(newIndex);
   }
 
-  const ModalHeader = () => {
 
+  useImperativeHandle(ref, () => ({
+    openExpanAnim,
+    closeExpandAnim,
+    declareLetterMeta
+  }));
+
+
+  const ModalHeader = () => {
     return(
         <div 
           className="ModalHeader relative"
@@ -190,7 +208,7 @@ export default function LetterModal({
                 letterSpacing: "5px"
               }}
             >
-              {letter.letter_name.toUpperCase()}
+              {letterName.toUpperCase()}
             </h1>
           </div>
         </div>
@@ -217,35 +235,38 @@ export default function LetterModal({
     );
   }
 
+
   return (
-    <div className = "lettermodal">
-      {isSelected && (
-        <div
+    <div 
+      ref = {modalRef}
+      className = "lettermodal"
+    >
+      <div
         ref={expandedFaceRef}
         className="absolute flex flex-col justify-between bg-emerald-100 z-[30] pointer-events-auto overflow-hidden"
         style={{ 
-            width: modalDimensions.start_width, 
-            height: modalDimensions.start_height, 
+            opacity: letterIndex > -1 ? 1 : 0,
             pointerEvents: 'none', 
-            backgroundColor: letter.letter_color || "#f5f5f5" }}
-        >
-          {ModalHeader()}
-          
-          {ModalBody()}
+            backgroundColor: letterColor || "#f5f5f5"
+          }}
+      >
+        {ModalHeader()}
+        
+        {ModalBody()}
 
-          <div className="shrink-0 flex justify-end p-4">
-            <button
-            onClick={(e) => {
-                e.stopPropagation();
-                closeExpandAnim();
-                setIsOpen(false);
-            }}
-            className="absolute bottom-1 right-1 z-[50] pointer-events-auto text-black px-1">
-            ✕
-            </button>
-          </div>
+        <div className="shrink-0 flex justify-end p-4">
+          <button
+          onClick={(e) => {
+              e.stopPropagation();
+              closeExpandAnim();
+          }}
+          className="absolute bottom-1 right-1 z-[50] pointer-events-auto text-black px-1">
+          ✕
+          </button>
         </div>
-      )}
+      </div>
     </div>
   );
-}
+});
+
+export default LetterModal;
