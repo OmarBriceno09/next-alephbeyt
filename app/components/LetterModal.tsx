@@ -10,11 +10,11 @@ import { Script } from "@/types/Script";
 import Carousel from "./Carousel";
 import { ModalDimensions, LetterDisplay, createEmptyLetterDisplay} from '@/types/MetaTypes';
 import LetterBoxSwapDisplay from "./LetterBoxSwapDisplay";
-import ModalBlockList from "./ModalBlockList";
+import ModalBlockList, { ModalBlockListHandle } from "./ModalBlockList";
+import { Letter } from "@/types/Letter";
 
 interface ModalProps {
   scripts: Script [],
-  selectedScriptIndex: number,
   modalDimensions: React.RefObject<ModalDimensions>,
   onClose: () => void;
   scriptChange: (newScriptIndex: number) => void;
@@ -23,15 +23,15 @@ interface ModalProps {
 export type LetterModalHandle = {
   openExpanAnim: () => Promise<void>;
   closeExpandAnim: () => Promise<void>;
+  rescaleOpenModal: () => Promise<void>;
+  scriptChangeUpdates: (newScriptIndex: number) => Promise<void>;
   declareLetterMeta: (newIndex:number) => Promise<void>;
-
 };
 
 const LetterModal = forwardRef<LetterModalHandle, ModalProps>(
   function LetterModal(
     {
-      scripts, 
-      selectedScriptIndex,
+      scripts,
       modalDimensions,
       onClose,
       scriptChange
@@ -41,26 +41,43 @@ const LetterModal = forwardRef<LetterModalHandle, ModalProps>(
 
     const modalRef = useRef<HTMLDivElement> (null);
 
+    const ModalBlockListRef = useRef<ModalBlockListHandle> (null);
+
     const expandedFaceRef = useRef<HTMLDivElement>(null);
     const [letterDisplayList, setLetterDisplayList] = useState<LetterDisplay[]>([]);
+    const [selectedScriptIndex, setSelectedSciptIndex] = useState<number>(-1);
     const [letterIndex, setLetterIndex] = useState<number>(-1);
-    const [satColor, setSatColor] = useState<string>("");
-    const [litColor, setLitColor] = useState<string>("");
-    const [darkColor, setDarkColor] = useState<string>("");
 
-    const [letterName, setLetterName] = useState<string>("");
-    const [letterColor, setLetterColor] = useState<string>("#f5f5f5");
+    const prevLetter = useRef<Letter | null> (null);
+
+    const colorPalette = useRef<{sat:string, lit:string, dark:string}> ({sat:"", lit:"", dark:""});
 
     
-    const openExpanAnim = (): Promise<void> => {
+    const openExpanAnim = async (): Promise<void> => {
+      const newColor = prevLetter.current?.letter_color || "#f5f5f5";
+      const newColorPalette = computePalette(newColor);
+      colorPalette.current = newColorPalette;
+
       return new Promise((resolve=> {
         gsap.timeline().set(
           expandedFaceRef.current,
             {
-                width: modalDimensions.current.start_width,
-                height: modalDimensions.current.start_height,
-                x: modalDimensions.current.start_pos[0],
-                y: modalDimensions.current.start_pos[1]
+              width: modalDimensions.current.start_width,
+              height: modalDimensions.current.start_height,
+              x: modalDimensions.current.start_pos[0],
+              y: modalDimensions.current.start_pos[1]
+            }
+        ).set(
+          expandedFaceRef.current,
+            {
+              css: {
+                  "--color-default":newColor,
+                  "--color-dark":colorPalette.current.dark
+              },
+              onComplete: () =>  {
+                //console.log("change the block snippet color, opening");
+                ModalBlockListRef.current?.updateBlockListColors(newColorPalette);
+              }
             }
         ).to(
             expandedFaceRef.current,
@@ -83,25 +100,8 @@ const LetterModal = forwardRef<LetterModalHandle, ModalProps>(
                 }
             }
         );
-      }))
+      }));
     };
-
-
-    /*const reScaleExpan = () => {
-      if (expandedFaceRef.current) {
-          gsap.set(
-              expandedFaceRef.current,
-              {
-                  width: modalDimensions.current.end_width,
-                  height: modalDimensions.current.end_height,
-                  x: modalDimensions.current.end_pos[0],
-                  y: modalDimensions.current.end_pos[1],
-                  ease: "power2.out",
-
-              }
-          );
-      }
-    };*/
 
 
     const closeExpandAnim = (): Promise<void> => {
@@ -130,12 +130,95 @@ const LetterModal = forwardRef<LetterModalHandle, ModalProps>(
             }
           }
         );
-      }))
+      }));
     };
 
 
+    const rescaleOpenModal = (): Promise<void> => {
+      return new Promise((resolve=>{
+        gsap.set(
+          expandedFaceRef.current,
+          {
+            width: modalDimensions.current.end_width,
+            height: modalDimensions.current.end_height,
+            x: modalDimensions.current.end_pos[0],
+            y: modalDimensions.current.end_pos[1],
+            onComplete: () => {
+              resolve();
+            }
+          }
+        );
+      }));
+
+    };
+
+    const translateOpenModal = (): Promise<void> => {
+      return new Promise((resolve=>{
+        gsap.to(
+          expandedFaceRef.current,
+          {
+            x: modalDimensions.current.end_pos[0],
+            y: modalDimensions.current.end_pos[1],
+            duration: 0.5,//SWITCHROTTIME
+            ease: "power2.out",
+            onComplete: () => {
+              resolve();
+            }
+          }
+        );
+      }));
+    };
+
+
+
+    const computePalette = (base: string) => {
+      return {
+        sat: Color(base).hsl().saturationl(80).lightness(40).rgb().string(),
+        lit: Color(base).hsl().saturationl(85).lightness(85).rgb().string(),
+        dark: Color(base).hsl().saturationl(80).lightness(20).rgb().string()
+      };
+    };
+
+
+    const letterColorAnim = async (newColor: string, duration: number) => {
+      const newColorPalette = computePalette(newColor);
+      colorPalette.current = newColorPalette;
+
+      gsap.to(expandedFaceRef.current, {
+        duration: duration,
+        ease: "power1.out",
+        css: {
+          "--color-default":newColor,
+          "--color-dark": newColorPalette.dark
+        },
+        onComplete: () =>  {
+          //console.log("change the block snippet color, switching");
+          ModalBlockListRef.current?.updateBlockListColors(newColorPalette);
+        }
+      });
+    }
+
+
+    const scriptChangeUpdates = async (newScriptIndex: number) => {
+        setSelectedSciptIndex(newScriptIndex);
+        
+        const script = scripts[newScriptIndex];
+        const newLetter = script?.letters?.[letterIndex] || null;
+        const newColor = newLetter?.letter_color || "#f5f5f5";
+        console.log("newLetter!: ", newLetter);
+        if(newLetter && expandedFaceRef.current &&(prevLetter.current?.letter_color != newColor)){
+          letterColorAnim(newColor, 0.3);
+        }
+        translateOpenModal(); //this will update the position of the modal if changed
+
+        prevLetter.current = newLetter;
+    }
+  
+
     //This function will declare all the illustrations and images right before isOpen is activated
     const declareLetterMeta = async (newIndex: number) =>{
+      setLetterIndex(newIndex);
+      
       const letterList: React.SetStateAction<LetterDisplay[]> = [];
       scripts.forEach(sp => {
         const newLetterEntry = createEmptyLetterDisplay();
@@ -155,20 +238,16 @@ const LetterModal = forwardRef<LetterModalHandle, ModalProps>(
       const script = scripts[selectedScriptIndex];
       const newLetter = script?.letters?.[newIndex] || null;
 
-      setLetterColor(newLetter.letter_color);
-      setLetterName(newLetter.letter_name);
-    
-      setSatColor(Color(newLetter.letter_color).hsl().saturationl(80).lightness(40).rgb().string());
-      setLitColor(Color(newLetter.letter_color).hsl().saturationl(85).lightness(85).rgb().string());
-      setDarkColor(Color(newLetter.letter_color).hsl().saturationl(80).lightness(20).rgb().string());
-
-      setLetterIndex(newIndex);
+      prevLetter.current = newLetter;
+      //Color will be handeled at openAnimExpand when the modal moves to the correct position
     }
 
 
     useImperativeHandle(ref, () => ({
       openExpanAnim,
       closeExpandAnim,
+      rescaleOpenModal,
+      scriptChangeUpdates,
       declareLetterMeta
     }));
 
@@ -202,13 +281,13 @@ const LetterModal = forwardRef<LetterModalHandle, ModalProps>(
             {/*Letter Name*/}
             <div className="absolute left-10 my-2">
               <h1 
-                className="text-6xl select-none"
+                className="letter-title text-6xl select-none"
                 style={{ 
-                  color: satColor,
+                  //color: satColor,
                   letterSpacing: "5px"
                 }}
               >
-                {letterName.toUpperCase()}
+                {prevLetter.current?.letter_name.toUpperCase() || ""}
               </h1>
             </div>
           </div>
@@ -222,14 +301,12 @@ const LetterModal = forwardRef<LetterModalHandle, ModalProps>(
       return(
         <div className="ModalBody h-full">
             <ModalBlockList
+              ref={ModalBlockListRef}
               scriptList={scripts}
               scriptIndex={selectedScriptIndex}
               letterIndex={letterIndex}
               SWAPTIME={0.25}
-              modalDimensions={modalDimensions}
-              satColor={satColor}
-              litColor={litColor}
-              darkColor={darkColor}
+              modalDimensions={modalDimensions}//Pass the colorPalette here instead of just the letterColor, or better yet use a function to update in block list
             />
         </div>
       );
@@ -239,15 +316,14 @@ const LetterModal = forwardRef<LetterModalHandle, ModalProps>(
     return (
       <div 
         ref = {modalRef}
-        className = "lettermodal"
       >
         <div
           ref={expandedFaceRef}
-          className="absolute flex flex-col justify-between bg-emerald-100 z-[30] pointer-events-auto overflow-hidden"
+          className="letter-modal absolute flex flex-col justify-between bg-emerald-100 z-[30] pointer-events-auto overflow-hidden"
           style={{ 
               opacity: letterIndex > -1 ? 1 : 0,
               pointerEvents: 'none', 
-              backgroundColor: letterColor || "#f5f5f5"
+              //backgroundColor: letterColor || "#f5f5f5"
             }}
         >
           {ModalHeader()}

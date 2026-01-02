@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import ModalBlockSnippet from "./ModalBlockSnippet";
 import { PortableTextBlock } from "next-sanity";
@@ -14,10 +14,7 @@ type ModalBlockListProps = {
     scriptIndex: number,
     letterIndex: number,
     SWAPTIME: number,
-    modalDimensions: React.RefObject<ModalDimensions>,
-    satColor:string,
-    litColor:string,
-    darkColor:string
+    modalDimensions: React.RefObject<ModalDimensions>
 }
 
 const snippetConfigs = [
@@ -58,60 +55,76 @@ const itemVariants = {
     exit: { opacity: 0, x: -40 },
 };
 
-export default function ModalBlockList({
-    scriptList,
-    scriptIndex,
-    letterIndex,
-    SWAPTIME,
-    modalDimensions,
-    satColor,
-    litColor,
-    darkColor
-}:ModalBlockListProps){
-    const[selLetter, setSelLetter] = useState<Letter|null>(null);
+
+export type ModalBlockListHandle = {
+    updateBlockListColors: (palette: {sat:string, lit:string, dark:string}) => Promise<void>;
+};
+
+const ModalBlockList = forwardRef<ModalBlockListHandle, ModalBlockListProps>(
+    function ModalBlockList(
+        {
+            scriptList,
+            scriptIndex,
+            letterIndex,
+            SWAPTIME,
+            modalDimensions
+        },
+        ref
+    ){
+        const[selLetter, setSelLetter] = useState<Letter|null>(null);
+        const [colorPalette, setColorPalette]  = useState<{sat:string, lit:string, dark:string}> ({sat:"", lit:"", dark:""});
     
-    useEffect(() => {
-        if (scriptList[scriptIndex])
-            setSelLetter(scriptList[scriptIndex].letters?.[letterIndex]);
-        console.log("changing to: ", scriptIndex);
-    }, [scriptIndex, letterIndex]);
+        useEffect(() => {
+            if (scriptList[scriptIndex])
+                setSelLetter(scriptList[scriptIndex].letters?.[letterIndex]);
+            //console.log("changing to: ", scriptIndex);
+        }, [scriptIndex, letterIndex]);
 
-    return (
-        <div className="ModalBlockList relative w-full h-full overflow-x-hidden">
-        <AnimatePresence mode="wait">
-            <motion.div
-            key={`curr-${scriptIndex}-${letterIndex}`}
-            className="absolute inset-0 flex flex-col overflow-y-auto overflow-x-hidden pointer-events-auto items-end space-y-5 justify-start"
-            variants={containerVariants}
-            initial="hidden"
-            animate="show"
-            exit="exit"
-            transition={{ duration: SWAPTIME, ease: "easeInOut" }}
-            style={{
-                paddingInline: modalDimensions.current.start_width * 0.3,
-                paddingBlock: modalDimensions.current.start_width * 0.1,
-            }}
-            >
-            {snippetConfigs.map(({ key, title, startOpen }) => {
-                const info = selLetter?.[key as keyof typeof selLetter];
-                if (!info) return null;
-                return (
-                <motion.div key={key} variants={itemVariants}>
-                    <ModalBlockSnippet
-                    title={title}
-                    saturatedColor={satColor}
-                    lightenedColor={litColor}
-                    darkenedColor={darkColor}
-                    startOpen={startOpen}
-                    information={info as PortableTextBlock[]}
-                    modalDimensions={modalDimensions}
-                    />
+        const updateBlockListColors = async (palette: {sat:string, lit:string, dark:string}) => {
+            setColorPalette(palette);
+            //console.log("palette: ", palette);
+        }
+
+        useImperativeHandle(ref, () => ({
+            updateBlockListColors
+        }));
+
+        return (
+            <div className="ModalBlockList relative w-full h-full overflow-x-hidden">
+            <AnimatePresence mode="wait">
+                <motion.div
+                key={`curr-${scriptIndex}-${letterIndex}`}
+                className="absolute inset-0 flex flex-col overflow-y-auto overflow-x-hidden pointer-events-auto items-end space-y-5 justify-start"
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
+                exit="exit"
+                transition={{ duration: SWAPTIME, ease: "easeInOut" }}
+                style={{
+                    paddingInline: modalDimensions.current.start_width * 0.3,
+                    paddingBlock: modalDimensions.current.start_width * 0.1,
+                }}
+                >
+                {snippetConfigs.map(({ key, title, startOpen }) => {
+                    const info = selLetter?.[key as keyof typeof selLetter];
+                    if (!info) return null;
+                    return (
+                    <motion.div key={key} variants={itemVariants}>
+                        <ModalBlockSnippet
+                        title={title}
+                        letterColorPalette={colorPalette}
+                        startOpen={startOpen}
+                        information={info as PortableTextBlock[]}
+                        modalDimensions={modalDimensions}
+                        />
+                    </motion.div>
+                    );
+                })}
                 </motion.div>
-                );
-            })}
-            </motion.div>
-        </AnimatePresence>
-        </div>
-    );
+            </AnimatePresence>
+            </div>
+        );
+    }
+);
 
-}
+export default ModalBlockList;

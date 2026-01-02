@@ -10,9 +10,7 @@ const MAXHEIGHT = 360;// 'h-90' in Tailwind = 360px
 
 interface ModalBlockSnippet {
   title: string,
-  saturatedColor: string,
-  darkenedColor: string,
-  lightenedColor: string,
+  letterColorPalette: {sat:string, lit:string, dark:string},
   startOpen?: boolean,
   information: PortableTextBlock[] | LetterStats,
   modalDimensions: React.RefObject<ModalDimensions>,
@@ -29,9 +27,7 @@ function isLetterStats(data:unknown): data is LetterStats {
 
 export default function LetterModal({ 
     title, 
-    saturatedColor,
-    darkenedColor,
-    lightenedColor,
+    letterColorPalette,
     startOpen=false,
     information,
     modalDimensions
@@ -40,6 +36,7 @@ export default function LetterModal({
     const [hovered, setHovered] = useState(false);
     const contentWrapperRef = useRef<HTMLDivElement>(null);
     const contentInnerRef = useRef<HTMLDivElement>(null);
+
 
     //Components for the portable text block
     const components: PortableTextComponents = {
@@ -117,7 +114,7 @@ export default function LetterModal({
     return(
       <div 
         className="PortableTextBlockSnippet items-end drop-shadow-lg/25"
-        style={{ backgroundColor: lightenedColor }}
+        style={{ backgroundColor: letterColorPalette.lit }}
       >
         {/*Title Area*/}
         <div 
@@ -128,7 +125,7 @@ export default function LetterModal({
         >
             <h1 
               className="text-2xl select-none transition-colors duration-100"
-              style={{ color: hovered? darkenedColor : saturatedColor }}
+              style={{ color: hovered? letterColorPalette.dark :letterColorPalette.sat }}
             >
               {title}
             </h1>

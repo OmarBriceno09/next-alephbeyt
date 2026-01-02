@@ -77,35 +77,23 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
     const cubeScalers  = useRef<HTMLDivElement[]>([]); // hover scale
 
     const [selectedLetterIndex, setSelectedLetterIndex] = useState<number>(-1);
-    const selCubeCont = useRef<HTMLDivElement| null> (null);
     const intArraySetup = useRef<number[]>([7,8,7]);
     const letterModalDimensions = useRef<ModalDimensions>(createEmptyModalDims());
     //const scriptOptions = Array.from(new Set(scripts.map(script => script.title)));
     //const [letterModalDimensions, setLetterModalDimensions] = useState<ModalDimensions>(createEmptyModalDims());
     const LetterModalRef = useRef<LetterModalHandle> (null);
     const [allowModalClick, setAllowModalClick] = useState(false);// this will allow for the die to be clickable
+    const [selDieVis, setSelDieVis] = useState(true);
     
     //gets initial faces and projects them on die
     //die seem to spawn at a scale of 166.64, when they should be of scale 145. 
     useEffect(() => {
-        /*function updateCubeSize() {
-            const vw = window.innerWidth * 0.085;
-            const cubeSize = Math.min(160, Math.max(70, vw));
-            console.log("updateCubeSize in useEffect: ", cubeSize);
-            //document.documentElement.style.setProperty('--cube-size', `${cubeSize}px`);
-        }*/
-
-        //updateCubeSize();
-        //window.addEventListener('resize', updateCubeSize);
-
         if (scriptOptions.length == 0){
             setScriptOptions(Array.from(new Set(scripts.map(script => script.title))));
         }
         if (scriptOptions.length > 0 && selectedScriptIndex<0) {
             setupTheGrid();
         }
-
-        //return () => window.removeEventListener('resize', updateCubeSize);
     }, [scriptOptions, selectedScriptIndex, intArraySetup, letterModalDimensions]);
 
 
@@ -114,6 +102,7 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
             initialFaces.unshift(scripts[0]);
             setScriptFaces(initialFaces);
             setSelectedScriptIndex(0); // default to first option
+            LetterModalRef.current?.scriptChangeUpdates(0); //setting script for modal as 0
             //To set up initial "7,8,7" or other Int Array Setup
             intArraySetup.current = stringToArraySetup(scripts[0].array_setup);
             cubeCount.current = intArraySetup.current.reduce((a, b)=> a+b, 0);
@@ -121,6 +110,15 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
             refreshDicePositions();
             handleDiceAnimate([], {x:360, y:360}, ENTERROTATIONTIME, DICEANIMDELAY);
     };
+
+
+    const convertVhToPixels = (vh: number): number => {
+        const viewportHeightInPx = window.innerHeight;
+        const oneVhInPx = viewportHeightInPx / 100;
+        const totalHeightInPx = oneVhInPx * vh;
+        return totalHeightInPx;
+    }
+
 
     const computeLetterDimensions = async() =>{
         if(cubeCount.current>0){
@@ -137,7 +135,10 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
                 letterModalDimensions.current.start_height = dieWidth;
                 const modalWidth = LETTERMODALPERCENTSIZEWIDTH * window.innerWidth;
                 letterModalDimensions.current.end_width = modalWidth;
-                letterModalDimensions.current.end_height = modalWidth*0.6;
+
+                const modalHeight =  convertVhToPixels(75) - (dieWidth*DICEMARGINSCALE);
+
+                letterModalDimensions.current.end_height = modalHeight;
             }
         }
     };
@@ -146,7 +147,7 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
         await computeLetterDimensions(); //this seems to have the letterModalDimension.start_width = 0 ???
         const dieWidth = letterModalDimensions.current.start_width;//await computeWidth();
         const isLeftToRight = scripts[selectedScriptIndex]?.left_to_right ?? false;
-        const initialPositions = computeAlignedPositions(
+        const initialPositions = await computeAlignedPositions(
             window.innerWidth, 
             dieWidth, //160
             (dieWidth*DICEMARGINSCALE), //40
@@ -155,6 +156,8 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
             selectedLetterIndex,
             intArraySetup.current
         );
+        if (selectedLetterIndex>-1) //rescale modal when opened
+            await LetterModalRef.current?.rescaleOpenModal();
         setDiceItemsPos(initialPositions);//setDiceItemsPos(initialPositions);
         handleSetDicePosition(initialPositions);
     }
@@ -308,6 +311,7 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
 
         setTitleKey(newScriptIndex);
         setSelectedScriptIndex(newScriptIndex);
+        LetterModalRef.current?.scriptChangeUpdates(newScriptIndex);
 
         //face logic
         //console.log("handleScriptChange: ",scripts[newScriptIndex]);
@@ -455,22 +459,18 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
       
     const handleMouseLeave = (el: HTMLDivElement, time:number): Promise<void> => {
         return new Promise((resolve) => {
-            if (allowModalClick){
-                gsap.killTweensOf(el); //stop previous tweens
-                gsap.to(
-                    el, 
-                    { 
-                        scale: 1,
-                        duration: time, 
-                        ease: "power2.out",
-                        onComplete: () => {
-                            resolve();
-                        }
+            gsap.killTweensOf(el); //stop previous tweens
+            gsap.to(
+                el, 
+                { 
+                    scale: 1,
+                    duration: time, 
+                    ease: "power2.out",
+                    onComplete: () => {
+                        resolve();
                     }
-                )
-            } else {
-                resolve();
-            }
+                }
+            )
         });
     };
 
@@ -551,15 +551,11 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
 
     useEffect(() => { // for scaling open cubes
         const handleResize = () => {
-            if (selectedLetterIndex>=-1 && selCubeCont.current){
-                //moveDiceToOpenPos(selCubeCont.current, 0);
-                console.log("open modal");
-            }
             refreshDicePositions();
         };
         window.addEventListener('resize', handleResize);
         return ()=> window.removeEventListener('resize', handleResize);
-    }, [selectedLetterIndex, selCubeCont, letterModalDimensions, diceItemsPos]);
+    }, [selectedLetterIndex, letterModalDimensions, diceItemsPos]);
 
 
     //Okay, so when i click it, it shoud:
@@ -585,7 +581,8 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
 
     //how about this: IN LetterModal, detect when the letter index changes, if it does, call close animation from the modal and open it to the new index.
     const handleOnLetterClick = async (letterIndex: number, el: HTMLDivElement) => {
-        await handleMouseLeave(el, 0.1); // await 0.1 seconds for size to reset after clicking
+        setAllowModalClick(false); // this will trun back to true after all dice are animated with handleOpenLetter
+        await handleMouseLeave(el, 0.15); // await 0.1 seconds for size to reset after clicking
 
         if (selectedLetterIndex>-1 && letterIndex != selectedLetterIndex){
             await LetterModalRef.current?.closeExpandAnim(); //this will call close on its own
@@ -596,6 +593,8 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
 
         handleOnOpenLetter(letterIndex);
         await LetterModalRef.current?.openExpanAnim();
+
+        setSelDieVis(false); //turns off the die so its not visible when rolling
         
         setSelectedLetterIndex(letterIndex);
     };
@@ -607,6 +606,7 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
 
     const handleOnCloseLetter = async () =>{
         //close the letters at the same time as the modal closes.
+        setSelDieVis(true); // dice is back on before expansion to avoid race condition, the die will always be visible before the modal dissapears
         await animateOpenCloseDice(-1);
         setSelectedLetterIndex(-1);
     };
@@ -651,7 +651,6 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
                     <LetterModal
                         ref={LetterModalRef}
                         scripts={scripts} 
-                        selectedScriptIndex = {selectedScriptIndex}
                         modalDimensions = {letterModalDimensions}
                         onClose = {handleOnCloseLetter}
                         scriptChange = {handleScriptChange}
@@ -665,7 +664,7 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
                                 key={`DieIndex-${i}`}
                                 className="absolute transition-transform duration-500"
                                 style={{
-                                    //transform: `translate(${pos.x}px, ${pos.y}px)`,
+                                    opacity: (selectedLetterIndex == i && !selDieVis) ? 0 : 1,
                                 }}
                             >
                                 <LetterCube

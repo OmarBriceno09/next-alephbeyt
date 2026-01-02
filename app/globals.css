@@ -36,7 +36,7 @@ body {
 }
 
 .cube {
-  --cube-size: clamp(70px, 8.5svw, 160px);
+  --cube-size: clamp(70px, 8.5svw, 130px);/*160px*/
   --half-cube-size: calc(var(--cube-size) / 2);
  
   width: var(--cube-size);
@@ -118,12 +118,12 @@ body {
 }
 
 .image-die-scale {
-  width: clamp(2rem,4vw,5rem);
-  height: clamp(2rem,4vw,5rem);
+  width: clamp(2rem,4vw,4rem);/*5rem*/
+  height: clamp(2rem,4vw,4rem);
 }
 
 .text-die-scale {
-  font-size: clamp(2rem,4vw,4rem);
+  font-size: clamp(2rem,4vw,4rem);/*4rem*/
 }
 
 .image-die-scale-small {
@@ -133,6 +133,19 @@ body {
 
 .text-die-scale-small {
   font-size: clamp(1rem,2.5vw,2.5rem);
+}
+
+.letter-modal {
+  --color-default: #f5f5f5;
+  --color-sat: #ccc;
+  --color-lit: #eee;
+  --color-dark: #999;
+
+  background-color: var(--color-default); 
+}
+
+.letter-title {
+  color: var(--color-dark);
 }
 
 @font-face {
