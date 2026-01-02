@@ -36,7 +36,7 @@ body {
 }
 
 .cube {
-  --cube-size: clamp(70px, 8.5svw, 130px);/*160px*/
+  --cube-size: clamp(70px, 7svw, 130px);/*70px, 8.5 svw, 160px*/
   --half-cube-size: calc(var(--cube-size) / 2);
  
   width: var(--cube-size);
@@ -118,12 +118,12 @@ body {
 }
 
 .image-die-scale {
-  width: clamp(2rem,4vw,4rem);/*5rem*/
-  height: clamp(2rem,4vw,4rem);
+  width: clamp(2rem,3vw,4rem);/*2rem, 4vw, 5rem*/
+  height: clamp(2rem,3vw,4rem);
 }
 
 .text-die-scale {
-  font-size: clamp(2rem,4vw,4rem);/*4rem*/
+  font-size: clamp(1.5rem,3vw,3.5rem);/*4rem*/
 }
 
 .image-die-scale-small {

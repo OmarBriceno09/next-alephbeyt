@@ -10,9 +10,11 @@
   },
   "dependencies": {
     "@portabletext/react": "^3.2.1",
-    "@sanity/client": "^7.6.0",
+    "@sanity/client": "^7.13.2",
     "color": "^5.0.0",
+    "csv-parse": "^6.1.0",
     "dotenv": "^17.2.0",
+    "fs": "^0.0.1-security",
     "gsap": "^3.13.0",
     "next": "15.3.8",
     "next-sanity": "^9.12.0",
