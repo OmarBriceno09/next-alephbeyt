@@ -89,7 +89,7 @@ function loadScriptMap(csvPath: string): ScriptLettersMap {
 
 
 // 3. Fetch all scripts
-async function updateScripts() {
+async function updateColors() {
     const colorMap = loadColorMap("./public/data/LettersShared.csv");
     
     const scripts = await client.fetch(groq`
@@ -101,7 +101,6 @@ async function updateScripts() {
                 _key,
                 letter_name,
                 order_index,
-                display,
                 letter_color
             } | order(order_index asc)
         }
@@ -110,20 +109,18 @@ async function updateScripts() {
     for (const script of scripts) {
         let didChange = false;
 
-        console.log(script.title);
-
         const updatedLetters = script.letters.map((letter: {
-            letter_name:string,
+            _key: string,
+            letter_name: string,
             order_index:number, 
-            display:string,
             letter_color:string
         }) => {
+            console.log(letter._key+", "+letter.letter_name);
             const newColor = colorMap.get(letter.order_index);
 
             if (!newColor || letter.letter_color === newColor) {
                 return letter;
             }
-
             didChange = true;
             return {
                 ...letter,
@@ -132,7 +129,8 @@ async function updateScripts() {
         });
 
         if (!didChange) continue;
-        //console.log(updatedLetters);
+
+        console.log(updatedLetters);
 
         /*await client
         .patch(script._id)
@@ -219,4 +217,4 @@ async function updateTitlesChars() {
     }*/
 }
 
-updateTitlesChars();
+updateColors();
