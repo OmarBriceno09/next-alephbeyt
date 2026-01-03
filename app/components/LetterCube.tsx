@@ -74,7 +74,6 @@ export default function LetterCube({
     return (
         <div 
             key={cubeId}
-            data-index={letterIndex} //maybe delete if useless
             ref={(el) => {cubeRefs.current[letterIndex] = el!;}}
             className={`relative z-10 ${allowModalClick ? '' : 'pointer-events-none'}`}// No cursor-pointer here
             onClick={(e) => {
@@ -86,6 +85,7 @@ export default function LetterCube({
             
             <div
                 className="cube perspective"
+                data-index={letterIndex} //used to check el index in hanldeMouseEnter
                 ref={(el) => {cubeScalers.current[letterIndex] = el!;}}
                 onMouseEnter={(e) => handleMouseEnter(e.currentTarget as HTMLDivElement, 0.3)}
                 onMouseLeave={(e) => handleMouseLeave(e.currentTarget as HTMLDivElement, 0.3)}

@@ -448,7 +448,10 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
     };
 
     const handleMouseEnter = (el: HTMLDivElement, time:number) => {
-        if (allowModalClick){
+        const elIndex = el.getAttribute('data-index') || -1;
+        //console.log("selIndex: ", selectedLetterIndex);
+        if (allowModalClick && elIndex != selectedLetterIndex){//elIndex will never be -1, so elIndex(-1) == selectedLetterIndex(-1) will never happen
+            //console.log("el: "+ el.getAttribute('data-index')+ ", selIndex: "+selectedLetterIndex);
             gsap.killTweensOf(el); // stop previous tweens
             gsap.to(el, { 
                 scale: 1.1,
@@ -581,12 +584,13 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
 
     //how about this: IN LetterModal, detect when the letter index changes, if it does, call close animation from the modal and open it to the new index.
     const handleOnLetterClick = async (letterIndex: number, el: HTMLDivElement) => {
-        setAllowModalClick(false); // this will trun back to true after all dice are animated with handleOpenLetter
-        await handleMouseLeave(el, 0.15); // await 0.1 seconds for size to reset after clicking
+        setAllowModalClick(false); // this will turn back to true after all dice are animated with handleOpenLetter
+        await handleMouseLeave(el, 0.2); // await 0.1 seconds for size to reset after clicking
 
         if (selectedLetterIndex>-1 && letterIndex != selectedLetterIndex){
             await LetterModalRef.current?.closeExpandAnim(); //this will call close on its own
         }
+        setSelectedLetterIndex(letterIndex);
 
         //declare the design and texts of the modal here:
         await LetterModalRef.current?.declareLetterMeta(letterIndex);
@@ -595,8 +599,6 @@ export default function LetterGrid({ scripts }: { scripts:Script[] }) {
         await LetterModalRef.current?.openExpanAnim();
 
         setSelDieVis(false); //turns off the die so its not visible when rolling
-        
-        setSelectedLetterIndex(letterIndex);
     };
 
 
