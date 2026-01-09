@@ -676,7 +676,7 @@ const DiceContainer = forwardRef<DiceContainerHanlde, DiceContainerProps>(
             <div
                 ref = {DiceContainerRef} 
                 className="relative overflow-hidden cube-grid-container"
-                onClick={(e) => {
+                onClick={() => {
                     if(isMinimized){
                         console.log("Clicked dice container");
                         onSwitchTreeView(false);

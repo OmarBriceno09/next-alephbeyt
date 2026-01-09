@@ -109,7 +109,9 @@ export default function MainLayout({ scripts }: { scripts:Script[] }) {
 
             <div 
                 className="p-1"
-                style = {{backgroundColor: "#3d9444ff",}}
+                style = {{
+                    //backgroundColor: "#3d9444ff",
+                }}
             >
                 {/* Font Dropdown / Legend*/}
                 <select
