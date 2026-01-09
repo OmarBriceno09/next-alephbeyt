@@ -14,7 +14,6 @@ export interface ModalDimensions{
     end_pos: [number, number]; 
 }
 
-
 export const createEmptyModalDims = (): ModalDimensions => ({
     start_width: 0,
     start_height: 0,
@@ -22,7 +21,23 @@ export const createEmptyModalDims = (): ModalDimensions => ({
     end_height: 0,
     start_pos: [0, 0],
     end_pos: [0, 0]
-  });
+});
+
+
+export interface DiceContainerDimensions{
+    width: number;
+    height: number;
+    x: number;
+    y: number;
+}
+
+export const createEmptyDiceContainerDims = (): DiceContainerDimensions => ({
+    width: 0,
+    height: 0,
+    x: 0,
+    y: 0
+});
+
 
 export interface LetterDisplay{
     display: string|undefined;

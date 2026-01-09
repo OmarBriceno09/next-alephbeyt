@@ -114,7 +114,7 @@ export default function Carousel({
                         return (<CarouselBox
                             key={`CarouselBox-${index}`}
                             letterDisplay={item}
-                            scaletype={"die-scale-small"}
+                            scaletype={"modal-scale-small"}
                             index={index}
                             selectedIndex={selectedScriptIndex}
                             dimensions={{x: modalDimensions.current.start_width*SMALLUNITPROPORTION, y: modalDimensions.current.start_height*SMALLUNITPROPORTION}}

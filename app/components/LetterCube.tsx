@@ -34,7 +34,7 @@ function renderFace(
                     </span>
                 </h1>
             )}
-        <span className="absolute bottom-0 select-none text-[clamp(0.6rem,1vw,1rem)] mt-1 text-center block">
+        <span className="absolute bottom-0 select-none text-die-scale-small mt-1 text-center block">
             {letter.letter_name}
         </span>
       </div>

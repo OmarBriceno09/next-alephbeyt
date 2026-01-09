@@ -35,9 +35,21 @@ body {
   height: fit-content;
 }
 
-.cube {
-  --cube-size: clamp(70px, 7svw, 130px);/*70px, 8.5 svw, 160px*/
+.cube-grid-container {
+  container-type: inline-size;
+
+  --cube-size: 7cqw;/*clamp(10px, 7cqw, 130px);*/
   --half-cube-size: calc(var(--cube-size) / 2);
+  --letter-img-size: 3cqw;
+  --letter-text-size: 2.75cqw;
+  --letter-text-size-sm: 1cqw;
+  --modal-img-size-sm: 2cqw;
+  --modal-text-size-sm: 2cqw;
+}
+
+.cube {
+  /*--cube-size: clamp(10px, 7svw, 130px);/*70px, 8.5 svw, 160px*/
+  /*--half-cube-size: calc(var(--cube-size) / 2);*/
  
   width: var(--cube-size);
   height: var(--cube-size);
@@ -118,21 +130,25 @@ body {
 }
 
 .image-die-scale {
-  width: clamp(2rem,3vw,4rem);/*2rem, 4vw, 5rem*/
-  height: clamp(2rem,3vw,4rem);
+  width: var(--letter-img-size);/*clamp(10px, 3svw, 130px);*/
+  height: var(--letter-img-size);/*clamp(10px, 3svw, 130px);*/
 }
 
 .text-die-scale {
-  font-size: clamp(1.5rem,3vw,3.5rem);/*4rem*/
-}
-
-.image-die-scale-small {
-  width: clamp(1rem,2.5vw,2.25rem);
-  height: clamp(1rem,2.5vw,2.25rem);
+  font-size: var(--letter-text-size);/*clamp(10px, 2.75svw, 130px);*/
 }
 
 .text-die-scale-small {
-  font-size: clamp(1rem,2.5vw,2.5rem);
+  font-size: var(--letter-text-size-sm);/*clamp(0.5rem,1vw,1rem);*/
+}
+
+.image-modal-scale-small {
+  width: var(--modal-img-size-sm);
+  height: var(--modal-img-size-sm);
+}
+
+.text-modal-scale-small {
+  font-size: var(--modal-text-size-sm);/*clamp(0.5rem,1vw,1rem);*/
 }
 
 .letter-modal {

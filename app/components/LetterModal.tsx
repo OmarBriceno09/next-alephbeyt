@@ -16,13 +16,13 @@ import { Letter } from "@/types/Letter";
 interface ModalProps {
   scripts: Script [],
   modalDimensions: React.RefObject<ModalDimensions>,
-  onClose: () => void;
+  onClose: (switchingLetter:boolean) => void;
   scriptChange: (newScriptIndex: number) => void;
 }
 
 export type LetterModalHandle = {
   openExpanAnim: () => Promise<void>;
-  closeExpandAnim: () => Promise<void>;
+  closeExpandAnim: (switchingLetter:boolean) => Promise<void>;
   rescaleOpenModal: () => Promise<void>;
   scriptChangeUpdates: (newScriptIndex: number) => Promise<void>;
   declareLetterMeta: (newIndex:number) => Promise<void>;
@@ -104,7 +104,7 @@ const LetterModal = forwardRef<LetterModalHandle, ModalProps>(
     };
 
 
-    const closeExpandAnim = (): Promise<void> => {
+    const closeExpandAnim = (switchingLetter:boolean): Promise<void> => {
       return new Promise((resolve=> {
         gsap.timeline().to(
           expandedFaceRef.current,
@@ -114,7 +114,7 @@ const LetterModal = forwardRef<LetterModalHandle, ModalProps>(
             duration: 0.25,
             ease: "power2.out",
             onComplete: () =>  {
-              onClose();
+              onClose(switchingLetter);
             }
           }
         ).to(
@@ -334,7 +334,7 @@ const LetterModal = forwardRef<LetterModalHandle, ModalProps>(
             <button
             onClick={(e) => {
                 e.stopPropagation();
-                closeExpandAnim();
+                closeExpandAnim(false);
             }}
             className="absolute bottom-1 right-1 z-[50] pointer-events-auto text-black px-1">
             ✕
