@@ -99,7 +99,7 @@ const SelectedScriptTitle = forwardRef<SelectedScriptTitleHandle, SelectedScript
             <div 
                 ref = {SelectedScriptTitleRef}
                 className="scriptTitle text-center"
-                onClick={(el)=>onSwitchTreeView(true)}// switch to tree-view when title is clicked
+                onClick={()=>onSwitchTreeView(true)}// switch to tree-view when title is clicked
                 onMouseEnter={(e)=>handleMouseEnter(e.currentTarget as HTMLDivElement, 0.3)}
                 onMouseLeave={(e)=>handleMouseLeave(e.currentTarget as HTMLDivElement, 0.3)}
                 //style = {{backgroundColor: "#4274e0ff",}}
