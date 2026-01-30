@@ -93,7 +93,7 @@ const DiceContainer = forwardRef<DiceContainerHanlde, DiceContainerProps>(
         const cubeRotators = useRef<HTMLDivElement[]>([]); // roatate x/y/z
         const cubeScalers  = useRef<HTMLDivElement[]>([]); // hover scale
     
-        const [selectedLetterIndex, setSelectedLetterIndex] = useState<number>(-1);
+        const selectedLetterIndex = useRef<number>(-1);
         const intArraySetup = useRef<number[]>([7,8,7]);
         const containerDimensions = useRef<DiceContainerDimensions>(createEmptyDiceContainerDims());
         const letterModalDimensions = useRef<ModalDimensions>(createEmptyModalDims());
@@ -128,18 +128,19 @@ const DiceContainer = forwardRef<DiceContainerHanlde, DiceContainerProps>(
             await computeLetterDimensions(); //this seems to have the letterModalDimension.start_width = 0 ???
             const dieWidth = letterModalDimensions.current.start_width;//await computeWidth();
             const isLeftToRight = scripts[selectedScriptIndex]?.left_to_right ?? false;
+            console.log("animateContainerDims: selectedLetterIndex: ", selectedLetterIndex.current);
             const initialPositions = await computeAlignedPositions(
                 containerDimensions.current.width,//ContainerWidth, 
                 dieWidth, //160
                 (dieWidth*DICEMARGINSCALE), //40
                 (dieWidth*DICEMARGINSCALE), //40
                 isLeftToRight,
-                selectedLetterIndex,
+                selectedLetterIndex.current,
                 intArraySetup.current
             );
             setDiceItemsPos(initialPositions);//setDiceItemsPos(initialPositions);
             //handleSetDicePosition(initialPositions);
-            handleDiceAnimate(initialPositions, null, time, 0.0);
+            handleDiceAnimate(initialPositions, null, time, 0.0, "none");
 
 
             return new Promise((resolve => {
@@ -152,7 +153,7 @@ const DiceContainer = forwardRef<DiceContainerHanlde, DiceContainerProps>(
                         y: ContainerDims.y,
                         opacity: alpha,
                         duration: time,
-                        ease: "power2.out",
+                        ease: "none",//"power2.out",
                         onComplete: () => {
                             refreshDicePositions();
                             resolve();
@@ -175,7 +176,7 @@ const DiceContainer = forwardRef<DiceContainerHanlde, DiceContainerProps>(
             await setContainerDimensions(ContainerDims);
             //this will not be 360 maybe? Fix later?
             setAllowModalClick(false);
-            handleDiceAnimate([], {x:360, y:360}, ENTERROTATIONTIME, DICEANIMDELAY);
+            handleDiceAnimate([], {x:360, y:360}, ENTERROTATIONTIME, DICEANIMDELAY, "power4.out");
             setAllowModalClick(true);
         };
 
@@ -207,17 +208,17 @@ const DiceContainer = forwardRef<DiceContainerHanlde, DiceContainerProps>(
             await computeLetterDimensions(); //this seems to have the letterModalDimension.start_width = 0 ???
             const dieWidth = letterModalDimensions.current.start_width;//await computeWidth();
             const isLeftToRight = scripts[selectedScriptIndex]?.left_to_right ?? false;
-            console.log("refresDiePos: selectedLetterIndex = ", selectedLetterIndex);
+            console.log("refresDiePos: selectedLetterIndex = ", selectedLetterIndex.current);
             const initialPositions = await computeAlignedPositions(
                 containerDimensions.current.width,//ContainerWidth, 
                 dieWidth, //160
                 (dieWidth*DICEMARGINSCALE), //40
                 (dieWidth*DICEMARGINSCALE), //40
                 isLeftToRight,
-                selectedLetterIndex,
+                selectedLetterIndex.current,
                 intArraySetup.current
             );
-            if (selectedLetterIndex>-1) //rescale modal when opened
+            if (selectedLetterIndex.current>-1) //rescale modal when opened
                 await LetterModalRef.current?.rescaleOpenModal();
             setDiceItemsPos(initialPositions);//setDiceItemsPos(initialPositions);
             handleSetDicePosition(initialPositions);
@@ -321,6 +322,7 @@ const DiceContainer = forwardRef<DiceContainerHanlde, DiceContainerProps>(
             delay: number, 
             rottime: number,
             position: {x: number, y: number}, 
+            ease: string,
         ): Promise<void> => {
             return new Promise((resolve) =>{
                 gsap.to(
@@ -330,7 +332,7 @@ const DiceContainer = forwardRef<DiceContainerHanlde, DiceContainerProps>(
                         y: position.y,
                         duration: rottime,
                         delay,
-                        ease: "power4.out",
+                        ease: ease,//"none",//"power4.out",
                         onComplete: () => {
                             resolve();
                         }
@@ -361,7 +363,8 @@ const DiceContainer = forwardRef<DiceContainerHanlde, DiceContainerProps>(
             cube: HTMLDivElement, 
             delay: number, 
             rottime: number,
-            angle: {x: number; y: number}
+            angle: {x: number; y: number},
+            ease: string,
         ):Promise<void> => {
             return new Promise((resolve) =>{
                 gsap.to(
@@ -371,7 +374,7 @@ const DiceContainer = forwardRef<DiceContainerHanlde, DiceContainerProps>(
                         rotationY: angle.y,
                         duration: rottime,
                         delay,
-                        ease: "power4.out",
+                        ease: ease,
                         onComplete: () => {
                             resolve();
                         }
@@ -383,7 +386,7 @@ const DiceContainer = forwardRef<DiceContainerHanlde, DiceContainerProps>(
         const handleMouseEnter = (el: HTMLDivElement, time:number) => {
             const elIndex = el.getAttribute('data-index') || -1;
             //console.log("selIndex: ", selectedLetterIndex);
-            if (allowModalClick && elIndex != selectedLetterIndex){//elIndex will never be -1, so elIndex(-1) == selectedLetterIndex(-1) will never happen
+            if (allowModalClick && elIndex != selectedLetterIndex.current){//elIndex will never be -1, so elIndex(-1) == selectedLetterIndex(-1) will never happen
                 //console.log("el: "+ el.getAttribute('data-index')+ ", selIndex: "+selectedLetterIndex);
                 gsap.killTweensOf(el); // stop previous tweens
                 gsap.to(el, { 
@@ -434,7 +437,8 @@ const DiceContainer = forwardRef<DiceContainerHanlde, DiceContainerProps>(
             positions: { x: number; y: number }[] = [],
             angle: { x: number; y: number } | null,
             duration: number,
-            diceanimdelay: number
+            diceanimdelay: number,
+            ease: string
         ) => {
             //setAllowModalClick(false); //when the die are animated, the selection will be set to false.
             const doesTranslate = positions.length > 0;
@@ -452,10 +456,10 @@ const DiceContainer = forwardRef<DiceContainerHanlde, DiceContainerProps>(
                 const delay = i * diceanimdelay;
                 const anims: Promise<void>[] = [];
                 if (doesTranslate && positions[i]) {
-                    anims.push(animateTranslationCube(cube, delay, duration, positions[i]));
+                    anims.push(animateTranslationCube(cube, delay, duration, positions[i], ease));
                 }
                 if (doesRotate && cubeRotators.current[i]) {
-                    anims.push(animateRotationCube(cubeRotators.current[i], delay, duration, angle!));
+                    anims.push(animateRotationCube(cubeRotators.current[i], delay, duration, angle!, ease));
                 }
                 return Promise.all(anims);
             });
@@ -505,7 +509,7 @@ const DiceContainer = forwardRef<DiceContainerHanlde, DiceContainerProps>(
                 (dieWidth*DICEMARGINSCALE), //40
                 (dieWidth*DICEMARGINSCALE), //40
                 isLeftToRight,
-                selectedLetterIndex,
+                selectedLetterIndex.current,
                 intArraySetup.current
             );
 
@@ -547,7 +551,8 @@ const DiceContainer = forwardRef<DiceContainerHanlde, DiceContainerProps>(
             if (scriptFaces.some(script => script.title === newScriptStr)){//like includes
                 
                 console.log("current face" ,Faces[faceIndex]);
-                await handleDiceAnimate(endPositions, faceRotationMap[faceIndex], SWITCHROTTIME, DICEANIMDELAY);//rotate to index
+                await handleDiceAnimate(endPositions, faceRotationMap[faceIndex], 
+                    SWITCHROTTIME, DICEANIMDELAY, "power4.out");//rotate to index
             }
             else{
                 const selectedIndex = scriptFaces.findIndex(script => script.title === scripts[selectedScriptIndex]?.title);//this will get the previous selected face index
@@ -559,7 +564,8 @@ const DiceContainer = forwardRef<DiceContainerHanlde, DiceContainerProps>(
                     partialFaces[Faces.back] = scripts[newScriptIndex];
                     setScriptFaces(partialFaces);
                     //roll
-                    await handleDiceAnimate(endPositions, faceRotationMap[Faces.back], SWITCHROTTIME, DICEANIMDELAY);
+                    await handleDiceAnimate(endPositions, faceRotationMap[Faces.back], 
+                        SWITCHROTTIME, DICEANIMDELAY, "power4.out");
                     //append to rest of faces
                     newFaces.push(scripts[newScriptIndex]);
 
@@ -571,7 +577,8 @@ const DiceContainer = forwardRef<DiceContainerHanlde, DiceContainerProps>(
                     setScriptFaces(partialFaces);
 
                     //roll
-                    await handleDiceAnimate(endPositions, faceRotationMap[Faces.front], SWITCHROTTIME, DICEANIMDELAY);
+                    await handleDiceAnimate(endPositions, faceRotationMap[Faces.front], 
+                        SWITCHROTTIME, DICEANIMDELAY, "power4.out");
                     //append to rest of faces
                     newFaces.unshift(scripts[newScriptIndex]);
                 }
@@ -608,7 +615,7 @@ const DiceContainer = forwardRef<DiceContainerHanlde, DiceContainerProps>(
                 intArraySetup.current
             );
             setDiceItemsPos(initialPositions);
-            await handleDiceAnimate(initialPositions, null, SWITCHROTTIME, 0.0);
+            await handleDiceAnimate(initialPositions, null, SWITCHROTTIME, 0.0, "power4.out");
         }
 
         const handleOnLetterClick = async (letterIndex: number, el: HTMLDivElement) => {
@@ -616,13 +623,13 @@ const DiceContainer = forwardRef<DiceContainerHanlde, DiceContainerProps>(
             await handleMouseLeave(el, 0.2); // await 0.1 seconds for size to reset after clicking
 
             console.log("DiceContainer:handleOnLetterClick: arg letterIndex = ", letterIndex);
-            console.log("DiceContainer:handleOnLetterClick: selectedLetterIndex = ", selectedLetterIndex);
-            if (selectedLetterIndex>-1 && letterIndex != selectedLetterIndex){
+            console.log("DiceContainer:handleOnLetterClick: selectedLetterIndex = ", selectedLetterIndex.current);
+            if (selectedLetterIndex.current>-1 && letterIndex != selectedLetterIndex.current){
                 //setAllowModalClick(false);
                 await LetterModalRef.current?.closeExpandAnim(true); //true = is switching the letter, not closing
                 setAllowModalClick(true);
             }
-            setSelectedLetterIndex(letterIndex);
+            selectedLetterIndex.current = letterIndex;
 
             //declare the design and texts of the modal here:
             await LetterModalRef.current?.declareLetterMeta(letterIndex);
@@ -643,10 +650,10 @@ const DiceContainer = forwardRef<DiceContainerHanlde, DiceContainerProps>(
         const handleOnCloseLetter = async (switchingLetter:boolean) =>{
             //close the letters at the same time as the modal closes.
             setSelDieVis(true); // dice is back on before expansion to avoid race condition, the die will always be visible before the modal dissapears
-            await animateOpenCloseDice(-1);
             if(!switchingLetter)
-                console.log("DiceContainer:handleOnCloseLetter: not switching to letter, so index is -1");
-                setSelectedLetterIndex(-1);//if letter is not being switched, then close
+                //console.log("DiceContainer:handleOnCloseLetter: not switching to letter, so index is -1");
+                selectedLetterIndex.current = -1;//if letter is not being switched, then close
+            await animateOpenCloseDice(-1);
         };
 
         const handleToMinimize = async (toMinimize:boolean, ContainerDims: DiceContainerDimensions, alpha: number, time:number) => {
@@ -654,7 +661,7 @@ const DiceContainer = forwardRef<DiceContainerHanlde, DiceContainerProps>(
             setIsMinimized(toMinimize);
             setAllowModalClick(!toMinimize);
             console.log("DiceContainer:handleToMinimize: arg selectedLetterIndex = ", selectedLetterIndex);
-            if(toMinimize && selectedLetterIndex>-1){
+            if(toMinimize && selectedLetterIndex.current>-1){
                 console.log("DiceContainer:handleToMinimize: Modal closing");
                 await LetterModalRef.current?.closeExpandAnim(false);
 
@@ -708,7 +715,7 @@ const DiceContainer = forwardRef<DiceContainerHanlde, DiceContainerProps>(
                                 key={`DieIndex-${i}`}
                                 className="absolute transition-transform duration-500"
                                 style={{
-                                    opacity: (selectedLetterIndex == i && !selDieVis) ? 0 : 1,
+                                    opacity: (selectedLetterIndex.current == i && !selDieVis) ? 0 : 1,
                                 }}
                             >
                                 <LetterCube

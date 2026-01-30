@@ -78,8 +78,6 @@ export default function MainLayout({ scripts }: { scripts:Script[] }) {
     }
 
 
-
-
     useEffect(() => { // for scaling open cubes
         const handleResize = () => {
             const ContainerDims = createEmptyDiceContainerDims();

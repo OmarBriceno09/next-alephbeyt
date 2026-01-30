@@ -13,7 +13,7 @@ interface SelectedScriptTitleProps {
 }
 
 export type SelectedScriptTitleHandle = {
-    hideTitle: (isHide: boolean, time:number) => void;
+    hideTitle: (isHide: boolean, time:number) => Promise<void>;
     handleScriptChange: (newScriptIndex: number) => Promise<void>;
 }
 
@@ -29,14 +29,16 @@ const SelectedScriptTitle = forwardRef<SelectedScriptTitleHandle, SelectedScript
         const SelectedScriptTitleRef = useRef<HTMLDivElement> (null);
         const [titleKey, setTitleKey] = useState(0);
 
-        const hideTitle = (isHide: boolean, time:number) => {
+        const hideTitle = async (isHide: boolean, time:number) => {
             const moveToY = (isHide) ? -100: 0;
             const toPos = {x:0, y:moveToY};
-            AnimatePosition(toPos, time);
+            await AnimatePosition(toPos, time);
 
         }
 
         const AnimatePosition = async (toPos: {x:number, y:number}, time: number): Promise<void> => {
+            console.log("AnimatePosition: toPos: ", toPos);
+            
             return new Promise(resolve=> {
                 gsap.to(
                     SelectedScriptTitleRef.current,
@@ -54,7 +56,7 @@ const SelectedScriptTitle = forwardRef<SelectedScriptTitleHandle, SelectedScript
         };
 
         const handleMouseEnter = (el: HTMLDivElement, time:number) => {
-            gsap.killTweensOf(el); // stop previous tweens
+            //gsap.killTweensOf(el); // stop previous tweens
             gsap.to(el, { 
                 scale: 1.05,
                 duration: time, 
@@ -64,7 +66,7 @@ const SelectedScriptTitle = forwardRef<SelectedScriptTitleHandle, SelectedScript
 
         const handleMouseLeave = (el: HTMLDivElement, time:number): Promise<void> => {
             return new Promise((resolve) => {
-                gsap.killTweensOf(el); //stop previous tweens
+                //gsap.killTweensOf(el); //stop previous tweens
                 gsap.to(
                     el, 
                     { 
