@@ -5,6 +5,7 @@ import { Script } from '@/types/Script';
 import { createEmptyDiceContainerDims } from '@/types/MetaTypes';
 import DiceContainer, { DiceContainerHanlde } from "./DiceContainer";
 import SelectedScriptTitle, { SelectedScriptTitleHandle } from './SelectedScriptTitle';
+import { MapTreeNode } from '@/types/MapTreeNode';
 
 const LETTERMODALPERCENTSIZEWIDTH = 0.65; 
 const ENTERROTATIONTIME = 1.5;
@@ -13,7 +14,9 @@ const DICEANIMDELAY = 0.01;
 const DICEMARGINSCALE = 0.3;
 
 
-export default function MainLayout({ scripts }: { scripts:Script[] }) {
+export default function MainLayout(
+    { scripts, mapTreeNodes }: 
+    { scripts:Script[], mapTreeNodes: MapTreeNode[] }) {
 
     //Title and other polish
     //const [titleKey, setTitleKey] = useState(0);
@@ -31,6 +34,7 @@ export default function MainLayout({ scripts }: { scripts:Script[] }) {
     useEffect(() => {
         if (DiceContainerRef){
             if (scriptOptions.length == 0){
+                console.log(mapTreeNodes);
                 setScriptOptions(Array.from(new Set(scripts.map(script => script.title))));
             }
             if (scriptOptions.length > 0 && selectedScriptIndex<0) {
