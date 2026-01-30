@@ -5,7 +5,7 @@ export type Script = {
     _id: string;
     _createdAt: Date;
     title: string;
-    order_index: Int16Array;
+    order_index: number;
     font: string;
     left_to_right: boolean;
     array_setup: string;
@@ -17,7 +17,7 @@ export const createEmptyScript = (): Script => ({
     _id: "",
     _createdAt: new Date(),       // “now” instead of epoch
     title: "",
-    order_index: new Int16Array(),
+    order_index: -1,
     font: "",
     left_to_right: false,
     array_setup: "7,8,7",

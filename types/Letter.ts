@@ -12,7 +12,7 @@ export type Letter = {
     _id: string;
     _createdAt: Date;
     letter_name: string;
-    order_index: Int16Array;
+    order_index: number;
     display: string;
     display_image: {
         asset?: SanityAsset;
