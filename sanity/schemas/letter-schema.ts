@@ -42,22 +42,6 @@ const letter = {
             of:[{type: 'presImage'}],
         },
     ],
-    orderings: [
-        {
-            title: 'Order Index (Ascending)',
-            name: 'orderIndexAsc',
-            by: [
-                {field: 'order_index', direction: 'asc'}
-            ]
-        },
-        {
-            title: 'Order Index (Descending)',
-            name: 'orderIndexDesc',
-            by: [
-                {field: 'order_index', direction: 'desc'}
-            ]
-        },
-    ]
 };
 
 export default letter;

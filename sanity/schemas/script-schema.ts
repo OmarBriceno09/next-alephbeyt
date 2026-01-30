@@ -17,6 +17,22 @@ const script = {
         },
         { name: 'exp_summary', title: 'Expanded Summary', type: 'array', of: [{type: 'block'}]},
     ],
+    orderings: [
+        {
+            title: 'Order Index (Ascending)',
+            name: 'orderIndexAsc',
+            by: [
+                {field: 'order_index', direction: 'asc'}
+            ]
+        },
+        {
+            title: 'Order Index (Descending)',
+            name: 'orderIndexDesc',
+            by: [
+                {field: 'order_index', direction: 'desc'}
+            ]
+        },
+    ]
 };
 
 export default script;
