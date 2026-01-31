@@ -15,8 +15,14 @@ const DICEMARGINSCALE = 0.3;
 
 
 export default function MainLayout(
-    { scripts, mapTreeNodes }: 
-    { scripts:Script[], mapTreeNodes: MapTreeNode[] }) {
+    { 
+        scripts, 
+        mapTreeNodes 
+    }: { 
+        scripts:Script[], 
+        mapTreeNodes: MapTreeNode[] 
+    }
+) {
 
     //Title and other polish
     //const [titleKey, setTitleKey] = useState(0);
@@ -34,6 +40,7 @@ export default function MainLayout(
     useEffect(() => {
         if (DiceContainerRef){
             if (scriptOptions.length == 0){
+                console.log(scripts);
                 console.log(mapTreeNodes);
                 setScriptOptions(Array.from(new Set(scripts.map(script => script.title))));
             }
