@@ -1,4 +1,4 @@
-import { createEmptyDiceContainerDims, createEmptyModalDims, DiceContainerDimensions, ModalDimensions } from "@/types/MetaTypes";
+import { createEmptyContainerDims, createEmptyModalDims, ContainerDimensions, ModalDimensions } from "@/types/MetaTypes";
 import { Script } from "@/types/Script";
 import gsap from "gsap";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
@@ -22,6 +22,9 @@ const faceRotationMap = [
     { x: 90, y: 0 },
     { x: 0, y: 180 }
 ];
+
+const MIN_DIM_MULT = {x:0.3, y:0.1};//width will be multiplied by these two when minimized
+
 
 function getNeighborScripts(scripts: Script[], newScript_title: string, total: number): Script[] {
     const index = scripts.findIndex(script => script.title === newScript_title);
@@ -51,6 +54,7 @@ const DIECONTAINERSCALE = 0.07; // this number has to match to "--cube-size: 7cq
 
 interface DiceContainerProps {
     scripts: Script [],
+    inTreeView: boolean,
     LETTERMODALPERCENTSIZEWIDTH: number,
     ENTERROTATIONTIME: number,
     SWITCHROTTIME: number,
@@ -58,19 +62,20 @@ interface DiceContainerProps {
     DICEMARGINSCALE: number,
     scriptChange: (newScriptIndex: number) => void;
     onSwitchTreeView: (toTreeView: boolean) => void;
-}
+};
 
-export type DiceContainerHanlde = {
-    setupTheGrid: (scriptIndex: number, scriptOption: string, ContainerDims: DiceContainerDimensions) => Promise<void>;
-    setContainerDimensions: (ContainerDims: DiceContainerDimensions) => Promise<void>
-    handleToMinimize: (isMinimized:boolean, ContainerDims: DiceContainerDimensions, alpha: number, time:number) => Promise<void>;
+export type DiceContainerHandle = {
+    setupTheGrid: (scriptIndex: number, scriptOption: string, ContainerDims: ContainerDimensions) => Promise<void>;
+    setContainerDimensions: (DefaultDims: ContainerDimensions) => Promise<void>
+    handleToMinimize: (isMinimized:boolean, DefaultDims: ContainerDimensions, time:number) => Promise<void>;
     handleScriptChange: (newScriptIndex: number) => Promise<void>;
 };
 
-const DiceContainer = forwardRef<DiceContainerHanlde, DiceContainerProps>(
+const DiceContainer = forwardRef<DiceContainerHandle, DiceContainerProps>(
     function DiceContainer(
         {
             scripts,
+            inTreeView,
             LETTERMODALPERCENTSIZEWIDTH, 
             ENTERROTATIONTIME,
             SWITCHROTTIME,
@@ -95,26 +100,32 @@ const DiceContainer = forwardRef<DiceContainerHanlde, DiceContainerProps>(
     
         const selectedLetterIndex = useRef<number>(-1);
         const intArraySetup = useRef<number[]>([7,8,7]);
-        const containerDimensions = useRef<DiceContainerDimensions>(createEmptyDiceContainerDims());
+        const containerDimensions = useRef<ContainerDimensions>(createEmptyContainerDims());
         const letterModalDimensions = useRef<ModalDimensions>(createEmptyModalDims());
         //const scriptOptions = Array.from(new Set(scripts.map(script => script.title)));
         //const [letterModalDimensions, setLetterModalDimensions] = useState<ModalDimensions>(createEmptyModalDims());
         const LetterModalRef = useRef<LetterModalHandle> (null);
         const [allowModalClick, setAllowModalClick] = useState(false);// this will allow for the die to be clickable
-        const [isMinimized, setIsMinimized] = useState(false); //this will switch true when die container is small
         const [selDieVis, setSelDieVis] = useState(true);
 
-        const setContainerDimensions = async (ContainerDims: DiceContainerDimensions): Promise<void> => {
+
+        const setContainerDimensions = async (DefaultDims: ContainerDimensions): Promise<void> => {
+            const DiceContainerDims : ContainerDimensions = {...DefaultDims};
+            if (inTreeView) {//toOpen
+                DiceContainerDims.width = DefaultDims.width*MIN_DIM_MULT.x;
+                DiceContainerDims.height = DefaultDims.width*MIN_DIM_MULT.y; //maybe change this later?
+            }
+            
             return new Promise((resolve => {
                 gsap.set(
                     DiceContainerRef.current,
                     {
-                        width: ContainerDims.width,
-                        height: ContainerDims.height,
-                        x: ContainerDims.x,
-                        y: ContainerDims.y,
+                        width: DiceContainerDims.width,
+                        height: DiceContainerDims.height,
+                        x: DiceContainerDims.x,
+                        y: DiceContainerDims.y,
                         onComplete: () => {
-                            containerDimensions.current = ContainerDims;
+                            containerDimensions.current = DiceContainerDims;
                             refreshDicePositions();
                             resolve();
                         }
@@ -123,7 +134,7 @@ const DiceContainer = forwardRef<DiceContainerHanlde, DiceContainerProps>(
             }));
         };
 
-        const animateContainerDimensions = async (ContainerDims: DiceContainerDimensions, alpha: number, time:number): Promise<void> => {
+        const animateContainerDimensions = async (ContainerDims: ContainerDimensions, alpha: number, time:number): Promise<void> => {
             containerDimensions.current = ContainerDims;
             await computeLetterDimensions(); //this seems to have the letterModalDimension.start_width = 0 ???
             const dieWidth = letterModalDimensions.current.start_width;//await computeWidth();
@@ -163,7 +174,7 @@ const DiceContainer = forwardRef<DiceContainerHanlde, DiceContainerProps>(
             }));
         };
 
-        const setupTheGrid = async(scriptIndex: number, scriptOption: string, ContainerDims: DiceContainerDimensions) => {
+        const setupTheGrid = async(scriptIndex: number, scriptOption: string, ContainerDims: ContainerDimensions) => {
             const initialFaces = getNeighborScripts(scripts, scriptOption, 5);
             initialFaces.unshift(scripts[scriptIndex]);//remove script zero
             setScriptFaces(initialFaces);
@@ -208,7 +219,7 @@ const DiceContainer = forwardRef<DiceContainerHanlde, DiceContainerProps>(
             await computeLetterDimensions(); //this seems to have the letterModalDimension.start_width = 0 ???
             const dieWidth = letterModalDimensions.current.start_width;//await computeWidth();
             const isLeftToRight = scripts[selectedScriptIndex]?.left_to_right ?? false;
-            console.log("refresDiePos: selectedLetterIndex = ", selectedLetterIndex.current);
+            //console.log("refresDiePos: selectedLetterIndex = ", selectedLetterIndex.current);
             const initialPositions = await computeAlignedPositions(
                 containerDimensions.current.width,//ContainerWidth, 
                 dieWidth, //160
@@ -656,19 +667,26 @@ const DiceContainer = forwardRef<DiceContainerHanlde, DiceContainerProps>(
             await animateOpenCloseDice(-1);
         };
 
-        const handleToMinimize = async (toMinimize:boolean, ContainerDims: DiceContainerDimensions, alpha: number, time:number) => {
+        const handleToMinimize = async (toMinimize:boolean, DefaultDims: ContainerDimensions, time:number) => {
+            const DiceContainerDims : ContainerDimensions = {...DefaultDims};
+            let alpha = 1;
+
             console.log("DiceContainer:handleToMinimize: arg toMinimized = ", toMinimize);
-            setIsMinimized(toMinimize);
             setAllowModalClick(!toMinimize);
             console.log("DiceContainer:handleToMinimize: arg selectedLetterIndex = ", selectedLetterIndex);
-            if(toMinimize && selectedLetterIndex.current>-1){
-                console.log("DiceContainer:handleToMinimize: Modal closing");
-                await LetterModalRef.current?.closeExpandAnim(false);
+            if (toMinimize) {//toOpen
+                DiceContainerDims.width = DefaultDims.width*MIN_DIM_MULT.x;
+                DiceContainerDims.height = DefaultDims.width*MIN_DIM_MULT.y; //maybe change this later?
+                alpha = 0.5;
+                if(selectedLetterIndex.current>-1){
+                    console.log("DiceContainer:handleToMinimize: Modal closing");
+                    await LetterModalRef.current?.closeExpandAnim(false);
 
-                console.log("DiceContainer:handleToMinimize: Modal closed");
+                    console.log("DiceContainer:handleToMinimize: Modal closed");
+                }
             }
 
-            animateContainerDimensions(ContainerDims, alpha, time);
+            animateContainerDimensions(DiceContainerDims, alpha, time);
         } 
 
         useImperativeHandle(ref, () => ({
@@ -684,7 +702,7 @@ const DiceContainer = forwardRef<DiceContainerHanlde, DiceContainerProps>(
                 ref = {DiceContainerRef} 
                 className="relative overflow-hidden cube-grid-container"
                 onClick={() => {
-                    if(isMinimized){
+                    if(inTreeView){
                         console.log("Clicked dice container");
                         onSwitchTreeView(false);
                     }

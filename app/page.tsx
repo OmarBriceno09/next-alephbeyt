@@ -6,7 +6,7 @@ export default async function Home() {
 
 
   return (
-    <div className="min-h-screen bg-white text-black flex flex-col items-center py-5 overflow-x-hidden">
+    <div className="min-h-screen bg-white text-black flex flex-col items-center py-5">
       <MainLayout 
         scripts={fetchedData.scripts}
         mapTreeNodes={fetchedData.mapTreeNodes}

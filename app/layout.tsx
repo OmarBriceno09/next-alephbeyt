@@ -30,6 +30,12 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <LayoutWrapper>{children}</LayoutWrapper>
+        {/*<div className="min-h-[300vh] bg-red-200">
+          <div className="sticky top-[90vh] bg-blue-500 h-20">
+            STICKY TEST
+          </div>
+        </div>*/}
+
       </body>
     </html>
   );

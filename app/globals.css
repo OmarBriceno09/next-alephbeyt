@@ -37,6 +37,8 @@ body {
 
 .cube-grid-container {
   container-type: inline-size;
+  /*position: fixed;
+  bottom: 0;*/
 
   --cube-size: 7cqw;/*clamp(10px, 7cqw, 130px);*/
   --half-cube-size: calc(var(--cube-size) / 2);

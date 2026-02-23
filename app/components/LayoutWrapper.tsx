@@ -5,8 +5,8 @@ import { usePathname } from 'next/navigation';
 import Footer from './Footer';
 
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const hideFooter = pathname.startsWith('/admin');
+  //const pathname = usePathname();
+  const hideFooter = true;//pathname.startsWith('/admin');
 
   return (
     <>

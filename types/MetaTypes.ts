@@ -24,14 +24,14 @@ export const createEmptyModalDims = (): ModalDimensions => ({
 });
 
 
-export interface DiceContainerDimensions{
+export interface ContainerDimensions{
     width: number;
     height: number;
     x: number;
     y: number;
 }
 
-export const createEmptyDiceContainerDims = (): DiceContainerDimensions => ({
+export const createEmptyContainerDims = (): ContainerDimensions => ({
     width: 0,
     height: 0,
     x: 0,

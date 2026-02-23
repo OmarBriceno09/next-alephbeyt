@@ -5,5 +5,4 @@ export type MapTreeNode = {
     order_index: number;
     age_pos: number;
     points_to: string;
-    is_node: boolean;
 }
