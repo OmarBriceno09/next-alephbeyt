@@ -77,7 +77,7 @@ const MapTree = forwardRef<MapTreeHandle, MapTreeProps>(
             await DiceContainerRefHandle.current?.handleToMinimize(toOpen, DefaultDims,0.5);
             
             animateTreeContainerDims(recalculateDims, time);
-            let treetime = (toOpen) ? time*4 : time;
+            const treetime = (toOpen) ? time*4 : time;
             AnimateDisplayTreeWipe(toOpen, treetime);
 
         };
@@ -391,7 +391,7 @@ const MapTree = forwardRef<MapTreeHandle, MapTreeProps>(
                                 })
                             )}
                             {/* nodes */}
-                            {layoutTreeNodes.map((node, index) => {
+                            {layoutTreeNodes.map((node) => {
                                 if (node.is_node) return null;
 
                                 const paddingX = 15;
