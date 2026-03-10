@@ -18,23 +18,25 @@ const SWITCHROTTIME = 0.5;
 const DICEANIMDELAY = 0.01;
 const DICEMARGINSCALE = 0.3;
 
-const MAPTREEMAXHEIGHT = 2;
-const MAPTREEWIDTHSCALE = 0.75;
+const MAPTREEMAXLENGTH = 1.5;
+const MAPTREEHEIGHTSCALE = 0.75;
 
-const MapTreeUpMargin = 20;
+const MapTreeLeftMargin = 150;
+const MapTreeMinSize = 1300;
 
 
 type LayoutNode = ScriptMapTreeNode & {
     x: number
     y:number
-    xMin: number
-    xMax: number
+    yMin: number
+    yMax: number
     depth: number
 };
 
 
 interface MapTreeProps {
     scripts: Script[],
+    selectedScriptIndex: number,
     inTreeView: boolean,
     scriptMapTreeNodes: ScriptMapTreeNode[],
     scriptChange: (newScriptIndex: number) => void;
@@ -53,6 +55,7 @@ const MapTree = forwardRef<MapTreeHandle, MapTreeProps>(
         {
             scripts,
             inTreeView,
+            selectedScriptIndex,
             scriptMapTreeNodes,
             scriptChange,
             onSwitchTreeView,
@@ -60,21 +63,22 @@ const MapTree = forwardRef<MapTreeHandle, MapTreeProps>(
         ref
     ){
 
-        const MapTreeRef = useRef<HTMLDivElement> (null);
-        const TreeDisplayRef = useRef<HTMLDivElement> (null);
+        const MapTreeRef = useRef<HTMLDivElement> (null);//<SVGSVGElement> (null);
+        const TreeMaskRef = useRef<HTMLDivElement> (null);
         const DiceContainerRefHandle = useRef<DiceContainerHandle> (null);
         const [mapTreeContainerDims, setMapTreeContainerDims] = useState<ContainerDimensions> (createEmptyContainerDims());
-        const [stickyTopHeight, setStickyTopHeight] = useState<number>(0);
         const [layoutTreeNodes, setLayoutTreeNodes] = useState<LayoutNode[]> ([]);
         const [parentMap, setParentMap] = useState<Map<number, number[]>> ();//(new Map<number, number[]>());
 
         const handleToOpenTree = async (toOpen:boolean, DefaultDims: ContainerDimensions, time:number) => {
             const recalculateDims : ContainerDimensions = {...DefaultDims};
-            if(toOpen) //I have to do to Open, pass as param, don't rely in use state.
-                recalculateDims.height = MapTreeUpMargin + DefaultDims.height*MAPTREEMAXHEIGHT + 200;//200 is scale of small dice container
+            //if(toOpen) //I have to do to Open, pass as param, don't rely in use state.
+            //    recalculateDims.width = MapTreeLeftMargin + DefaultDims.width*MAPTREEMAXLENGTH;//200 is scale of small dice container
 
             //Await this one, because DiceContainer has to close first before minimizing
+            if(!toOpen) DiceContainerRefHandle.current?.setMiniScreenSelectable(toOpen); //this is supposed to time the selectability .. 
             await DiceContainerRefHandle.current?.handleToMinimize(toOpen, DefaultDims,0.5);
+            if(toOpen) DiceContainerRefHandle.current?.setMiniScreenSelectable(toOpen); // im not sure why neither of them are working :/
             
             animateTreeContainerDims(recalculateDims, time);
             const treetime = (toOpen) ? time*4 : time;
@@ -83,13 +87,13 @@ const MapTree = forwardRef<MapTreeHandle, MapTreeProps>(
         };
 
         const AnimateDisplayTreeWipe = async (toOpen:boolean, time: number) => {
-            if (!TreeDisplayRef) return;
+            if (!TreeMaskRef) return;
             if(toOpen){
                 console.log("open??");
                 gsap.fromTo(
-                    TreeDisplayRef.current,
+                    TreeMaskRef.current,
                     { 
-                        maskPosition: "0% 200%" 
+                        maskPosition: "200% 0%" 
 
                     },
                     {
@@ -100,8 +104,8 @@ const MapTree = forwardRef<MapTreeHandle, MapTreeProps>(
                 );
             } else {
                 console.log("close??");
-                gsap.to(TreeDisplayRef.current, {
-                    maskPosition: "0% 200%",
+                gsap.to(TreeMaskRef.current, {
+                    maskPosition: "200% 0%",
                     duration: time,
                     ease: "none",//"power3.in",
                 })
@@ -116,7 +120,6 @@ const MapTree = forwardRef<MapTreeHandle, MapTreeProps>(
                 setMapTreeContainerDims(DefaultDims); //placed here to draw the layout nodes
                 layoutTreeMapNodes();
                 if(scriptOptions.length>0){
-                    setStickyTopHeight(window.innerHeight - (DefaultDims.width*0.1));
                     DiceContainerRefHandle.current?.setupTheGrid(startIndex,scriptOptions[startIndex], DefaultDims);
                 }else{
                     setTreeContainerDimensions(DefaultDims);
@@ -126,12 +129,10 @@ const MapTree = forwardRef<MapTreeHandle, MapTreeProps>(
 
 
         const setTreeContainerDimensions = async (DefaultDims: ContainerDimensions): Promise<void> => {
-            setStickyTopHeight(window.innerHeight - (DefaultDims.width*0.1));
             const recalculateDims : ContainerDimensions = {...DefaultDims};
-            if(inTreeView)
-                recalculateDims.height = DefaultDims.height*MAPTREEMAXHEIGHT;
-
-            setMapTreeContainerDims(DefaultDims);
+            
+            console.log(DefaultDims.x);
+            setMapTreeContainerDims(recalculateDims);
             DiceContainerRefHandle.current?.setContainerDimensions(DefaultDims);
             return new Promise((resolve => {
                 gsap.set(
@@ -156,6 +157,7 @@ const MapTree = forwardRef<MapTreeHandle, MapTreeProps>(
 
         const animateTreeContainerDims = async (ContainerDims: ContainerDimensions, time:number): Promise<void> => {
             //treeContainerDimensions.current = ContainerDims;
+            console.log("animateTreeContainerDims: ", ContainerDims);
             return new Promise((resolve=>{
                 gsap.to(
                     MapTreeRef.current,
@@ -192,34 +194,34 @@ const MapTree = forwardRef<MapTreeHandle, MapTreeProps>(
             setParentMap(bParentMap);
             const childrenMap = buildChildrenMap(scriptMapTreeNodes);
             //const layoutTree = makeLayoutTree(depths, W, H);
-            const wMin = (W-(MAPTREEWIDTHSCALE*W))/2;
-            const wMax = wMin + (MAPTREEWIDTHSCALE*W);
-            makeLayoutTree(0, wMin, wMax, H, 0, layout);
+            const hMin = (H-(MAPTREEHEIGHTSCALE*H))/2;
+            const hMax = hMin + (MAPTREEHEIGHTSCALE*H);
+            makeLayoutTree(0, hMin, hMax, W, 0, layout);
             adjustMultiParentNodes(layout, bParentMap, childrenMap);
 
             console.log(layout);
             setLayoutTreeNodes(layout);
         }
 
-        const makeLayoutTree = (nodeIndex: number, xMin:number, xMax: number, yMax:number, depth: number, layout: LayoutNode[]) => {
+        const makeLayoutTree = (nodeIndex: number, yMin:number, yMax: number, xMax:number, depth: number, layout: LayoutNode[]) => {
             const node = scriptMapTreeNodes[nodeIndex];
 
-            const x = (xMin + xMax) / 2;
-            const y = node.age_pos * yMax;//+20 is up buffer
+            const y = (yMin + yMax) / 2;
+            const x = node.age_pos * xMax;
 
-            layout[nodeIndex] = { ...node, x, y, xMin, xMax, depth };
+            layout[nodeIndex] = { ...node, x, y, yMin, yMax, depth };
 
             const children = node.points_to;
             
             if (children.length === 0) return;
 
-            const sectionWidth = (xMax - xMin) / children.length;
+            const sectionHeight = (yMax - yMin) / children.length;
 
             children.forEach((childIndex, i) => {
-                const childMin = xMin + i * sectionWidth;
-                const childMax = childMin + sectionWidth;
+                const childMin = yMin + i * sectionHeight;
+                const childMax = childMin + sectionHeight;
 
-                makeLayoutTree(childIndex, childMin, childMax, yMax, depth + 1, layout);
+                makeLayoutTree(childIndex, childMin, childMax, xMax, depth + 1, layout);
             });
         };
 
@@ -250,13 +252,13 @@ const MapTree = forwardRef<MapTreeHandle, MapTreeProps>(
 
 
         //recursive subtree shift function
-        const shiftSubtree = (layout: LayoutNode[], childrenMap: Map<number, number[]>, nodeIndex: number, deltaX: number) => {
+        const shiftSubtree = (layout: LayoutNode[], childrenMap: Map<number, number[]>, nodeIndex: number, deltaY: number) => {
             const children = childrenMap.get(nodeIndex);
             if (!children) return;
 
             children.forEach(childIndex => {
-                layout[childIndex].x += deltaX;
-                shiftSubtree(layout, childrenMap, childIndex, deltaX);
+                layout[childIndex].y += deltaY;
+                shiftSubtree(layout, childrenMap, childIndex, deltaY);
             });
         };
 
@@ -271,32 +273,37 @@ const MapTree = forwardRef<MapTreeHandle, MapTreeProps>(
                 const parents = parentMap.get(index);
                 if (!parents || parents.length <= 1) return;
 
-                const parentXs = parents.map(p => layout[p].x).sort((a,b)=>a-b);
+                const parentYs = parents.map(p => layout[p].y).sort((a,b)=>a-b);
 
-                const mid = Math.floor(parentXs.length / 2);
+                const mid = Math.floor(parentYs.length / 2);
                 const median =
-                parentXs.length % 2 === 0
-                    ? (parentXs[mid - 1] + parentXs[mid]) / 2
-                    : parentXs[mid];
+                parentYs.length % 2 === 0
+                    ? (parentYs[mid - 1] + parentYs[mid]) / 2
+                    : parentYs[mid];
 
-                const deltaX = median - node.x;
-                if (deltaX === 0) return;
+                const deltaY = median - node.y;
+                if (deltaY === 0) return;
 
-                node.x = median;
+                node.y = median;
 
                 // Shift entire subtree
-                shiftSubtree(layout, childrenMap, index, deltaX);
+                shiftSubtree(layout, childrenMap, index, deltaY);
             });
         };
 
+        //so the tree doesn't shrink bellow the MapTreeMinSize value
+        const mapTreeWidthLimit = () => {
+            return (mapTreeContainerDims.width < MapTreeMinSize) ? MapTreeMinSize : mapTreeContainerDims.width;
+        }
+
+
         //building horiz/vert edge paths
         const buildEdgePath = ( parent: LayoutNode, child: LayoutNode, isMultiParent: boolean) => {
-            const heightFactor = (mapTreeContainerDims.height*MAPTREEMAXHEIGHT);
             
-            const x1 = parent.x * mapTreeContainerDims.width;
-            const y1 = MapTreeUpMargin + parent.y * heightFactor;
-            const x2 = child.x * mapTreeContainerDims.width;
-            const y2 = MapTreeUpMargin + child.y * heightFactor;
+            const x1 = parent.x;
+            const y1 = parent.y;
+            const x2 = child.x;
+            const y2 = child.y;
 
             const dx = x2 - x1;
             const dy = y2 - y1;
@@ -305,8 +312,7 @@ const MapTree = forwardRef<MapTreeHandle, MapTreeProps>(
             if (dx === 0) {
                 return `M ${x1} ${y1} V ${y2}`;
             }
-
-            // Pure horizontal
+            //Pure Horizontal
             if (dy === 0) {
                 return `M ${x1} ${y1} H ${x2}`;
             }
@@ -317,155 +323,195 @@ const MapTree = forwardRef<MapTreeHandle, MapTreeProps>(
             const radius = Math.min(12, Math.abs(dx), Math.abs(dy));
 
             if (!isMultiParent) {
-                // Horizontal → Vertical
-                return `
-                M ${x1} ${y1}
-                H ${x2 - xDir * radius}
-                Q ${x2} ${y1} ${x2} ${y1 + yDir * radius}
-                V ${y2}
-                `;
-            } else {
-                // Vertical → Horizontal
+                // Vertical → Horizontal (multi-parent)
                 return `
                 M ${x1} ${y1}
                 V ${y2 - yDir * radius}
                 Q ${x1} ${y2} ${x1 + xDir * radius} ${y2}
                 H ${x2}
                 `;
+            } else {
+                // Horizontal → Vertical (normal child)
+                return `
+                M ${x1} ${y1}
+                H ${x2 - xDir * radius}
+                Q ${x2} ${y1} ${x2} ${y1 + yDir * radius}
+                V ${y2}
+                `;
             }
         };
+
+
+        const positionedNodes = layoutTreeNodes.map(node => {
+            const x =
+                MapTreeLeftMargin +
+                node.x * mapTreeWidthLimit() * MAPTREEMAXLENGTH;
+
+            const y =
+                node.y * mapTreeContainerDims.height;
+
+            return { ...node, x, y };
+        });
     
+
         return(
             <div
                 ref = {MapTreeRef} 
-                className="relative"
+                className={`relative w-full h-full ${inTreeView?`overflow-x-auto`:`overflow-x-hidden`} overflow-y-hidden`}
                 style = {{
                         //opacity: 0.5,
                         //{`--cube-size`: `${letterModalDimensions.current.start_width}px`},
                         //w-[85vw], h-[75vh]
                         //width: "85vw",
                         //height: "125vh",
-                        //backgroundColor: "#959b2d",
+                        //backgroundColor: "#6f00ff",
                         //minHeight: "[200vh]"
                 }}
             >
-
                 <div
-                    ref = {TreeDisplayRef}
-                    className = "TreeDisplay absolute"
+                    ref = {TreeMaskRef}
+                    className = "MaskViewport absolute inset-0"
                     style={{
                         height: "100%",
-                        width: "100%",
+                        width: mapTreeWidthLimit() * MAPTREEMAXLENGTH + MapTreeLeftMargin,
                         //backgroundColor: "#959b2d",
                         WebkitMaskImage:
-                        "linear-gradient(to bottom, black 75%, transparent 100%)",
+                        "linear-gradient(to right, black 75%, transparent 100%)",
                         maskImage:
-                        "linear-gradient(to bottom, black 75%, transparent 100%)",
-                        WebkitMaskSize: "100% 200%",
-                        maskSize: "100% 200%",
-                        WebkitMaskPosition: "0% 100%",
-                        maskPosition: "0% 200%",
+                        "linear-gradient(to right, black 75%, transparent 100%)",
+                        WebkitMaskSize: "200% 100%",
+                        maskSize: "200% 100%",
+                        WebkitMaskPosition: "100% 0%",
+                        maskPosition: "200% 0%",
                         WebkitMaskRepeat: "no-repeat",
                         maskRepeat: "no-repeat",
                     }}
                 >
-                    {/* Tree DISPLAY*/}
-                    { (layoutTreeNodes && layoutTreeNodes.length > 0) ? (
-                        <svg className="absolute inset-0 w-full h-full">
-                            {/* edges */}
-                            {layoutTreeNodes.map((node, i) =>
-                                node.points_to.map((targetIndex) => {
-                                    const child = layoutTreeNodes[targetIndex];
-                                    const maplen = parentMap?.get(targetIndex)?.length;
-                                    if(maplen == undefined) return null;   
-                                    const multi = (maplen > 1);
-                                    return (
-                                        <path
-                                            key={`${i}-${targetIndex}`}
-                                            d={buildEdgePath(node, child, multi)}
-                                            fill="none"
-                                            stroke="#333"
-                                            strokeWidth={2}
-                                        />
-                                    );
-                                })
-                            )}
-                            {/* nodes */}
-                            {layoutTreeNodes.map((node) => {
-                                if (node.is_node) return null;
-
-                                const paddingX = 15;
-                                const height = 30;
-                                const approxTextWidth = node.title.length * 6;
-                                const width = approxTextWidth + paddingX;
-
-                                return (
-                                    <g
-                                    key={node._id}
-                                    transform={`translate(
-                                        ${node.x*mapTreeContainerDims.width}, 
-                                        ${MapTreeUpMargin + node.y*mapTreeContainerDims.height*MAPTREEMAXHEIGHT})`}
-                                    style={{ cursor: "pointer" }}
-                                    onClick={() => scriptChange(node.order_index)}
-                                    onMouseEnter={(e) => {
-                                        const targRect = e.currentTarget.querySelector("rect")
-                                        const nHeight = height*1.1; const nWidth = width*1.1;
-                                        targRect?.setAttribute("height", nHeight.toString());
-                                        targRect?.setAttribute("width", nWidth.toString());
-                                        targRect?.setAttribute("x", (-nWidth / 2).toString());
-                                        targRect?.setAttribute("y", (-nHeight / 2).toString());
-                                    }}
-                                    onMouseLeave={(e) => {
-                                        const targRect = e.currentTarget.querySelector("rect")
-                                        targRect?.setAttribute("height", height.toString());
-                                        targRect?.setAttribute("width", width.toString());
-                                        targRect?.setAttribute("x", (-width / 2).toString());
-                                        targRect?.setAttribute("y", (-height / 2).toString());
-                                    }}
-                                    >
-                                    <rect
-                                        x={-width / 2}
-                                        y={-height / 2}
-                                        width={width}
-                                        height={height}
-                                        rx={height / 2}
-                                        ry={height / 2}
-                                        fill="#fff"//none
-                                        stroke="#222"
-                                        strokeWidth={2}
-                                    />
-
-                                    <text
-                                        textAnchor="middle"
-                                        dominantBaseline="middle"
-                                        fontSize="12"
-                                        fill="#222"
-                                    >
-                                        {node.title}
-                                    </text>
-                                    </g>
-                                );
-                            })}
-                        </svg>
-                    ) : (
-                        null
-                    )
-                    }
-                    {/* Tree DISPLAY*/}
+                        <div
+                            className="absolute h-full w-full"
+                        >
+                            {/* Tree DISPLAY*/}
+                            { (positionedNodes && positionedNodes.length > 0) ? (
+                                <svg
+                                    //ref = {MapTreeRef} 
+                                    className="absolute inset-0"
+                                    width= "100%"
+                                    height={mapTreeContainerDims.height}
+                                    viewBox={`0 0 ${mapTreeWidthLimit() * MAPTREEMAXLENGTH + MapTreeLeftMargin} ${mapTreeContainerDims.height}`}
+                                >
+                                    <defs>
+                                        <linearGradient 
+                                            id="treeGradient" 
+                                            gradientUnits="userSpaceOnUse" 
+                                            x1="0" 
+                                            y1="0" 
+                                            x2={mapTreeWidthLimit() * MAPTREEMAXLENGTH + MapTreeLeftMargin}
+                                            y2="0"
+                                        >
+                                            <stop offset="0%" stopColor="#ff0000"/>
+                                            <stop offset="20%" stopColor="#ff9100"/>
+                                            <stop offset="40%" stopColor="#fffb00"/>
+                                            <stop offset="60%" stopColor="#2bff00"/>
+                                            <stop offset="80%" stopColor="#1900ff"/>
+                                            <stop offset="100%" stopColor="#ff00ea"/>
+                                        </linearGradient>
+                                    </defs>
 
 
+                                    {/* edges */}
+                                    {positionedNodes.map((node, i) =>
+                                        node.points_to.map((targetIndex) => {
+                                            const child = positionedNodes[targetIndex];
+                                            const maplen = parentMap?.get(targetIndex)?.length;
+                                            if(maplen == undefined) return null;   
+                                            const multi = (maplen > 1);
+                                            return (
+                                                <path
+                                                    key={`${i}-${targetIndex}`}
+                                                    d={buildEdgePath(node, child, multi)}
+                                                    fill="none"
+                                                    stroke="url(#treeGradient)"//"#222"
+                                                    strokeWidth={2}
+                                                />
+                                            );
+                                        })
+                                    )}
+                                    {/* nodes */}
+                                    {positionedNodes.map((node) => {
+                                        if (node.is_node) return null;// comment this line to see nodes
+
+                                        const paddingX = 15;
+                                        const height = 30;
+                                        const approxTextWidth = node.title.length * 6;
+                                        const width = approxTextWidth + paddingX;
+
+                                        const assignColor = (selectedScriptIndex>-1) ? (scripts[selectedScriptIndex].title === node.title) ? "#222" : "url(#treeGradient)" : "url(#treeGradient)";
+
+                                        return (
+                                            <g
+                                            key={node._id}
+                                            className="node"
+                                            style={{ cursor: "pointer" }}
+                                            onClick={() => scriptChange(node.order_index)}
+                                            onMouseEnter={(e)=>{
+                                                gsap.to(e.currentTarget, {
+                                                    scale:1.1,
+                                                    transformOrigin:"center",
+                                                    duration:0.2
+                                                });
+                                            }}
+                                            onMouseLeave={(e)=>{
+                                                gsap.to(e.currentTarget,{
+                                                    scale:1,
+                                                    duration:0.2
+                                                });
+                                            }}
+                                            >
+                                                <rect
+                                                    x={node.x - width/2}
+                                                    y={node.y - height/2}
+                                                    width={width}
+                                                    height={height}
+                                                    rx={height/2}
+                                                    fill="#fff"//"none"
+                                                    stroke={assignColor}//"url(#treeGradient)"//"#222"
+                                                    strokeWidth={2}
+                                                    className="nodeRect"
+                                                />
+
+                                                <text
+                                                    x={node.x}
+                                                    y={node.y}
+                                                    textAnchor = "middle"
+                                                    dominantBaseline = "middle"
+                                                    fontSize = "12"
+                                                    fill="#222"
+                                                    className = "select-none"
+                                                >
+                                                    {node.title}
+                                                </text>
+                                            </g>
+                                        );
+                                    })}
+                                </svg>
+                            ) : (
+                                null
+                            )
+                            }
+                            {/* Tree DISPLAY*/}
+                        </div>
 
                 </div>
 
 
-
                 <div
-                    className="diceContainerMover"
+                    className="diceContainerMover relative w-min"
                     style = {{
                         position: "sticky",
-                        top: stickyTopHeight,
+                        left: 0,
                         display: "flex",
-                        justifyContent: "center"
+                        justifyContent: "left",
+                        //backgroundColor: "#ff00f2",
                     }}
                 >
                     {/* Die Container*/}

@@ -69,6 +69,7 @@ export type DiceContainerHandle = {
     setContainerDimensions: (DefaultDims: ContainerDimensions) => Promise<void>
     handleToMinimize: (isMinimized:boolean, DefaultDims: ContainerDimensions, time:number) => Promise<void>;
     handleScriptChange: (newScriptIndex: number) => Promise<void>;
+    setMiniScreenSelectable: (isSelectable:boolean) => void;
 };
 
 const DiceContainer = forwardRef<DiceContainerHandle, DiceContainerProps>(
@@ -107,6 +108,12 @@ const DiceContainer = forwardRef<DiceContainerHandle, DiceContainerProps>(
         const LetterModalRef = useRef<LetterModalHandle> (null);
         const [allowModalClick, setAllowModalClick] = useState(false);// this will allow for the die to be clickable
         const [selDieVis, setSelDieVis] = useState(true);
+
+        const minScreenSelectable = useRef<boolean> (false);
+
+        const setMiniScreenSelectable = (isSelectable:boolean) => {
+            minScreenSelectable.current = isSelectable;
+        }
 
 
         const setContainerDimensions = async (DefaultDims: ContainerDimensions): Promise<void> => {
@@ -167,6 +174,23 @@ const DiceContainer = forwardRef<DiceContainerHandle, DiceContainerProps>(
                         ease: "none",//"power2.out",
                         onComplete: () => {
                             refreshDicePositions();
+                            resolve();
+                        }
+                    },
+                );
+            }));
+        };
+
+
+        const animateContainerAlpha = async (alpha: number, time:number): Promise<void> => {
+            return new Promise((resolve => {
+                gsap.to(
+                    DiceContainerRef.current,
+                    {
+                        opacity: alpha,
+                        duration: time,
+                        ease: "none",//"power2.out",
+                        onComplete: () => {
                             resolve();
                         }
                     },
@@ -685,7 +709,6 @@ const DiceContainer = forwardRef<DiceContainerHandle, DiceContainerProps>(
                     console.log("DiceContainer:handleToMinimize: Modal closed");
                 }
             }
-
             animateContainerDimensions(DiceContainerDims, alpha, time);
         } 
 
@@ -693,19 +716,26 @@ const DiceContainer = forwardRef<DiceContainerHandle, DiceContainerProps>(
             setupTheGrid,
             setContainerDimensions,
             handleToMinimize,
-            handleScriptChange
+            handleScriptChange,
+            setMiniScreenSelectable
         }));
 
 
         return (
             <div
                 ref = {DiceContainerRef} 
-                className="relative overflow-hidden cube-grid-container"
+                className="relative cube-grid-container"
                 onClick={() => {
                     if(inTreeView){
                         console.log("Clicked dice container");
                         onSwitchTreeView(false);
                     }
+                }}
+                onMouseEnter={() => {
+                    if(inTreeView) animateContainerAlpha(1, 0.3);
+                }}
+                onMouseLeave={() => {
+                    if(inTreeView) animateContainerAlpha(0.5, 0.3);
                 }}
                 style = {{
                         //opacity: 0.5,

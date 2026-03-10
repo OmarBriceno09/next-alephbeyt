@@ -59,10 +59,7 @@ export default function MainLayout(
     const SelectedScriptTitleRef = useRef<SelectedScriptTitleHandle> (null);
     const MapTreeRefHandle = useRef<MapTreeHandle> (null);
 
-    const [inTreeView, setInTreeView] = useState<boolean>(false);
-    //const [DefaultDims, setDefaultDims] = useState<DiceContainerDimensions> (createEmptyDiceContainerDims());
-    //const DiceContainerRefHandle = useRef<DiceContainerHandle> (null);
-
+    const [inTreeView, setToTreeView] = useState<boolean>(false);
     
 
     //gets initial faces and projects them on die
@@ -83,6 +80,9 @@ export default function MainLayout(
                 const startIndex = 0;
                 setSelectedScriptIndex(startIndex);
                 SelectedScriptTitleRef.current?.handleScriptChange(startIndex);
+                
+                //limit treeDims here
+                //if(defDims.width < 912) defDims.width = 912;
                 MapTreeRefHandle.current?.setupTreeContainerDimensions(defDims, startIndex, scriptOptions);
             }
         }
@@ -134,7 +134,8 @@ export default function MainLayout(
 
 
     const handleSwitchToScriptTreeView = async (toTreeView: boolean) => {
-        setInTreeView(toTreeView);
+        console.log("SETTING TOTREEVIEW: ", toTreeView);
+        setToTreeView(toTreeView);
         const defDims = createEmptyContainerDims();
         defDims.width = document.documentElement.clientWidth;
         defDims.height = window.innerHeight*0.75;
@@ -151,6 +152,9 @@ export default function MainLayout(
             defDims.width = document.documentElement.clientWidth;
             defDims.height = window.innerHeight*0.75;
             //setDefaultDims(defDims);
+            
+            //limit treeDims here
+            //if(defDims.width < 912) defDims.width = 912;
             MapTreeRefHandle.current?.setTreeContainerDimensions(defDims);
         };
         window.addEventListener('resize', handleResize);
@@ -176,20 +180,19 @@ export default function MainLayout(
             {<MapTree
                 ref={MapTreeRefHandle}
                 inTreeView = {inTreeView}
+                selectedScriptIndex = {selectedScriptIndex}
                 scripts={scripts}
                 scriptMapTreeNodes={scriptMapTreeNodes}
                 scriptChange = {handleScriptChange}
                 onSwitchTreeView={handleSwitchToScriptTreeView}
             />}
 
-            {/*
             <div 
                 className="p-1"
                 style = {{
                     //backgroundColor: "#3d9444ff",
                 }}
             >
-                {// Font Dropdown / Legend}
                 <select
                     onChange={(e) => handleScriptChange(e.target.selectedIndex)}
                     value={scripts[selectedScriptIndex]?.title || ''}
@@ -202,7 +205,6 @@ export default function MainLayout(
                     ))}
                 </select>
             </div>
-            */}
             <div
                 className="footerSpace w-full h-[10vh]"
             >
