@@ -32,7 +32,7 @@ const timelineDates = [
     {label:"500 BC", x:0.55},
     {label:"1 BC", x:0.6},
     {label:"100 AC", x:0.7},
-    {label:"1800 AC", x:0.9},
+    {label:"1800 AC", x:0.95},
 ];
 
 
