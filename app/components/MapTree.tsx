@@ -23,6 +23,17 @@ const MAPTREEHEIGHTSCALE = 0.75;
 
 const MapTreeLeftMargin = 150;
 const MapTreeMinSize = 1300;
+const MapTreeLegendHeight = 40;
+
+const timelineDates = [
+    {label:"2000 - 1800 BC", x:0.22},
+    {label:"1500 - 1000 BC", x:0.3},
+    {label:"800 BC", x:0.44},
+    {label:"500 BC", x:0.55},
+    {label:"1 BC", x:0.6},
+    {label:"100 AC", x:0.7},
+    {label:"1800 AC", x:0.9},
+];
 
 
 type LayoutNode = ScriptMapTreeNode & {
@@ -348,7 +359,7 @@ const MapTree = forwardRef<MapTreeHandle, MapTreeProps>(
                 node.x * mapTreeWidthLimit() * MAPTREEMAXLENGTH;
 
             const y =
-                node.y * mapTreeContainerDims.height;
+                node.y * (mapTreeContainerDims.height - MapTreeLegendHeight);
 
             return { ...node, x, y };
         });
@@ -416,7 +427,6 @@ const MapTree = forwardRef<MapTreeHandle, MapTreeProps>(
                                             <stop offset="100%" stopColor="#ff00ea"/>
                                         </linearGradient>
                                     </defs>
-
 
                                     {/* edges */}
                                     {positionedNodes.map((node, i) =>
@@ -493,6 +503,48 @@ const MapTree = forwardRef<MapTreeHandle, MapTreeProps>(
                                             </g>
                                         );
                                     })}
+
+                                    {/*Underline */}
+                                    <line
+                                        x1={0}
+                                        y1={mapTreeContainerDims.height - MapTreeLegendHeight}
+                                        x2={mapTreeWidthLimit() * MAPTREEMAXLENGTH + MapTreeLeftMargin}
+                                        y2={mapTreeContainerDims.height - MapTreeLegendHeight}
+                                        stroke="url(#treeGradient)"
+                                        strokeWidth={8}
+                                        strokeLinecap="round"
+                                    />
+
+                                    {/*Tick Marks*/}
+                                    {timelineDates.map((date, i) => (
+                                        <line
+                                            key={"tick-"+i}
+                                            x1={(mapTreeWidthLimit() * MAPTREEMAXLENGTH + MapTreeLeftMargin)* date.x}
+                                            x2={(mapTreeWidthLimit() * MAPTREEMAXLENGTH + MapTreeLeftMargin)* date.x}
+                                            y1={mapTreeContainerDims.height - MapTreeLegendHeight - 4}
+                                            y2={mapTreeContainerDims.height - MapTreeLegendHeight + 6}
+                                            stroke="#444"
+                                            strokeWidth={2}
+                                        />
+                                    ))}
+
+                                    {/*Timeline Labels*/}
+                                    {timelineDates.map((date, i) => (
+                                        <text
+                                            key={i}
+                                            x={(mapTreeWidthLimit() * MAPTREEMAXLENGTH + MapTreeLeftMargin)* date.x}
+                                            y={mapTreeContainerDims.height - MapTreeLegendHeight + 20}
+                                            textAnchor="middle"
+                                            fontSize="12"
+                                            fill="#222"
+                                            className="select-none"
+                                        >
+                                            {date.label}
+                                        </text>
+                                    ))}
+
+
+
                                 </svg>
                             ) : (
                                 null

@@ -77,7 +77,7 @@ export default function MainLayout(
                 //setDefaultDims(defDims);
                 //this one will also set the diceContainer
 
-                const startIndex = 0;
+                const startIndex = 1;
                 setSelectedScriptIndex(startIndex);
                 SelectedScriptTitleRef.current?.handleScriptChange(startIndex);
                 
