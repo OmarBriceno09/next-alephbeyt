@@ -166,6 +166,11 @@ body {
   color: var(--color-dark);
 }
 
+.windowWrapper {
+  width:100%;
+  height:auto;
+}
+
 .windowArea {
   position:relative;
 
@@ -177,13 +182,6 @@ body {
   margin: 40px auto;
 
   width: 100%;
-}
-
-@media (max-width:1300px){
-  .windowArea{
-    grid-template-columns:1fr;
-    width: 90%;
-  }
 }
 
 .subWindow {
@@ -240,6 +238,20 @@ body {
   gap: 10px;
   padding: 10px;
   background: #222;
+}
+
+
+@media (max-width:1300px){
+  .windowArea{
+    grid-template-columns:1fr;
+    width: 90%;
+  }
+  .subWindow.fullRow {
+    grid-column: span 1;
+  }
+  .expBtn {
+    visibility: hidden;
+  }
 }
 
 @font-face {

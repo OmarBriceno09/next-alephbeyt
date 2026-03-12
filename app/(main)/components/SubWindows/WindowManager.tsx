@@ -1,11 +1,13 @@
-import { useRef, useState } from "react"
+import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import SubWindow from "./SubWindow"
 import Footer from "../Footer"
 
 import gsap from "gsap"
+import ScrollToPlugin from "gsap/ScrollToPlugin";
 import {Flip} from "gsap/Flip"
 
 gsap.registerPlugin(Flip)
+gsap.registerPlugin(ScrollToPlugin);
 
 export type WindowData  = {
   id: string
@@ -41,6 +43,7 @@ function renderWindowContent(type: string) {
 export default function WindowManager() {
 
     const containerRef = useRef<HTMLDivElement>(null);
+    const wrapperRef = useRef<HTMLDivElement>(null);
     const [windows, setWindows] = useState<WindowData[]>([])
 
 
@@ -105,7 +108,6 @@ export default function WindowManager() {
 
     
     const closeWindow = (id:string) => {
-
         const el = containerRef.current?.querySelector(`[data-flip-id="${id}"]`);
 
         if(!el) return;
@@ -126,31 +128,69 @@ export default function WindowManager() {
 
     }
 
+    const prevWindowCount = useRef<number>(windows.length);
+        
+    useLayoutEffect(() => {
+        if (!wrapperRef.current) return;
+
+        // measure the actual height of the windowArea
+        const windowArea = containerRef.current;
+        if (!windowArea) return;
+
+        const newHeight = windowArea.offsetHeight;
+
+        const wrapper = wrapperRef.current;
+        if (!wrapper) return;
+
+        console.log(wrapper.scrollTop+", "+wrapper.scrollHeight);
+
+
+        gsap.to(wrapper, {
+            height: newHeight,
+            duration: 0.45,
+            ease: "power2.inOut"
+        });
+
+        // Animate page scroll if a window was added
+        if (windows.length > prevWindowCount.current) {
+            gsap.to(window, {
+                scrollTo: { y: document.body.scrollHeight },
+                duration: 0.45,
+                ease: "power2.inOut"
+            });
+        }
+
+        // Update previous length
+        prevWindowCount.current = windows.length;
+    }, [windows]);
+
     return (
     <>
-        <div   
-            ref={containerRef}
-            className="windowArea"
-        >
+        <div className="windowWrapper" ref={wrapperRef}>
+            <div   
+                ref={containerRef}
+                className="windowArea"
+            >
 
-            {windows.map(win => (
+                {windows.map(win => (
 
-                <SubWindow
-                key={win.id}
-                id={win.id}
-                label={win.label}
-                expanded={win.expanded}
-                closing={win?.closing}
-                onClose={closeWindow}
-                onExpand={toggleExpand}
-                >
+                    <SubWindow
+                    key={win.id}
+                    id={win.id}
+                    label={win.label}
+                    expanded={win.expanded}
+                    closing={win?.closing}
+                    onClose={closeWindow}
+                    onExpand={toggleExpand}
+                    >
 
-                {renderWindowContent(win.type)}
+                    {renderWindowContent(win.type)}
 
-                </SubWindow>
+                    </SubWindow>
 
-            ))}
+                ))}
 
+            </div>
         </div>
 
         <Footer windows={windows} spawnWindow={spawnWindow} />

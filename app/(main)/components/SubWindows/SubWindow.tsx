@@ -30,7 +30,7 @@ export default function SubWindow({
         <span>{label}</span>
 
         <div>
-          <button className="subWinBtn" onClick={()=>onExpand(id)}>⇔</button>
+          <button className="subWinBtn expBtn" onClick={()=>onExpand(id)}>⇔</button>
           <button className="subWinBtn" onClick={()=>onClose(id)}>✕</button>
         </div>
 
