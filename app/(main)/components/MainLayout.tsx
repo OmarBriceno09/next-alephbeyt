@@ -151,7 +151,7 @@ export default function MainLayout(
     useEffect(() => { // for scaling open cubes
         const handleResize = () => {
             const defDims = createEmptyContainerDims();
-            defDims.width = document.documentElement.clientWidth;0
+            defDims.width = document.documentElement.clientWidth;
             defDims.height = window.innerHeight*0.75;
             //setDefaultDims(defDims);
             
