@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from "react"
+import { useRef, useState } from "react"
 import SubWindow from "./SubWindow"
 import Footer from "../Footer"
 
@@ -12,7 +12,7 @@ export type WindowData  = {
   label: string
   type: string
   expanded: boolean
-  closing: boolean
+  closing?: boolean
 }
 
 function renderWindowContent(type: string) {
@@ -41,67 +41,13 @@ function renderWindowContent(type: string) {
 export default function WindowManager() {
 
     const containerRef = useRef<HTMLDivElement>(null);
-    const flipState = useRef<any>(null);
     const [windows, setWindows] = useState<WindowData[]>([])
 
 
-    const spawnWindow = (type: string, label: string) => {
-        
-        if (windows.some(w => w.type === type)) return;
-        const newWindow = {
-            id: crypto.randomUUID(),
-            label,
-            type,
-            expanded: false,
-            closing: false
-        };
+    const runFlip = (update: () => void) => {
+        const state = Flip.getState(containerRef.current!.querySelectorAll(".subWindow"));
 
-        flipState.current = Flip.getState(
-            containerRef.current!.querySelectorAll(".subWindow")
-        );
-        
-        setWindows(prev => [...prev, newWindow]);
-    }
-
-
-    function toggleExpand(id:string){
-        
-        flipState.current = Flip.getState(
-            containerRef.current!.querySelectorAll(".subWindow")
-        );
-
-        setWindows(prev =>
-            prev.map(w =>
-            w.id === id
-                ? {...w, expanded: !w.expanded}
-                : w
-            )
-        );
-    }
-
-
-    const closeWindow = (id: string) => {
-
-        flipState.current = Flip.getState(
-            containerRef.current!.querySelectorAll(".subWindow")
-        );
-
-        setWindows(prev =>
-            prev.map(w =>
-            w.id === id 
-                ? { ...w, closing: true } 
-                : w
-            )
-        );
-
-    }
-
-
-    useLayoutEffect(() => {
-
-        if (!flipState.current) return
-
-        const state = flipState.current
+        update();
 
         requestAnimationFrame(() => {
 
@@ -109,34 +55,76 @@ export default function WindowManager() {
                 duration: 0.45,
                 ease: "power2.inOut",
                 absolute: true,
-                targets: containerRef.current?.querySelectorAll(".subWindow"),
+                targets:".subWindow",
 
                 onEnter: (elements) => {
-                    return gsap.fromTo(
+                    gsap.fromTo(
                         elements,
-                        { opacity: 0, scale: 0.8 },
-                        { opacity: 1, scale: 1, duration: 0.4 }
+                        { opacity: 0, scale: 0.9 },
+                        { opacity: 1, scale: 1, duration: 0.35 }
                     );
                 },
-                onLeave: (elements) => {
-                    return gsap.fromTo(
-                        elements,
-                        { opacity: 1, scale: 1 },
-                        { opacity: 0, scale: 0.8, duration: 0.35 }
-                    );
-                }
             });
 
-            // remove closing windows AFTER the animation
-            gsap.delayedCall(0.35, () => {
-                setWindows(prev => prev.filter(w => !w.closing))
+        });
+    }
+
+    const spawnWindow = (type: string, label: string) => {
+        
+        if (windows.some(w => w.type === type)) return;
+
+        runFlip(() => {
+            setWindows(prev => [
+                ...prev,
+                {
+                    id: crypto.randomUUID(),
+                    label,
+                    type,
+                    expanded: false
+
+                }
+            ]);
+        });
+    }
+
+    
+    const toggleExpand = (id: string) => {
+
+        runFlip(() => {
+
+        setWindows(prev =>
+            prev.map(w =>
+            w.id === id
+                ? { ...w, expanded: !w.expanded }
+                : w
+            )
+        );
+
+        });
+    }
+
+    
+    const closeWindow = (id:string) => {
+
+        const el = containerRef.current?.querySelector(`[data-flip-id="${id}"]`);
+
+        if(!el) return;
+
+        gsap.to(el,{
+            opacity:0,
+            scale:0.9,
+            duration:0.3,
+            ease:"power2.inOut",
+            onComplete:()=>{
+
+            runFlip(()=>{
+                setWindows(prev => prev.filter(w => w.id !== id));
             });
+
+            }
         });
 
-        flipState.current = null;
-
-    }, [windows])
-
+    }
 
     return (
     <>
@@ -152,7 +140,7 @@ export default function WindowManager() {
                 id={win.id}
                 label={win.label}
                 expanded={win.expanded}
-                closing={win.closing}
+                closing={win?.closing}
                 onClose={closeWindow}
                 onExpand={toggleExpand}
                 >

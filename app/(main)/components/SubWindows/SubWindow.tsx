@@ -2,7 +2,7 @@ type SubWindowProps = {
   id: string
   label: string
   expanded: boolean
-  closing: boolean
+  closing: boolean | undefined
   onClose: (id:string)=>void
   onExpand: (id:string)=>void
   children: React.ReactNode
@@ -21,10 +21,8 @@ export default function SubWindow({
   return (
 
     <div
-        data-flip-id={id}
-        className={`subWindow 
-        ${expanded ? "fullRow" : ""} 
-        ${closing ? "closing" : ""}`}
+      className={`subWindow ${expanded ? "fullRow" : ""} ${closing ? "closing" : ""}`}
+      data-flip-id={id}
     >
 
       <div className="windowHeader">
