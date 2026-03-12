@@ -2,7 +2,7 @@ import { createEmptyContainerDims, createEmptyModalDims, ContainerDimensions, Mo
 import { Script } from "@/types/Script";
 import gsap from "gsap";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import LetterModal, { LetterModalHandle } from "./LetterModal";
+import LetterModal, { LetterModalHandle } from "./LetterModal/LetterModal";
 import LetterCube from "./LetterCube";
 
 

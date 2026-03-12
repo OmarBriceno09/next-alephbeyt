@@ -9,9 +9,9 @@ import gsap from "gsap";
 import { Script } from "@/types/Script";
 import Carousel from "./Carousel";
 import { ModalDimensions, LetterDisplay, createEmptyLetterDisplay} from '@/types/MetaTypes';
-import LetterBoxSwapDisplay from "./LetterBoxSwapDisplay";
 import ModalBlockList, { ModalBlockListHandle } from "./ModalBlockList";
 import { Letter } from "@/types/Letter";
+import LetterBoxSwapDisplay from "./LetterBoxSwapDisplay";
 
 interface ModalProps {
   scripts: Script [],

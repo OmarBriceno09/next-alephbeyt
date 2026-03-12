@@ -2,26 +2,53 @@
 
 import { useEffect, useRef } from 'react';
 import gsap from "gsap";
+import { WindowData  } from './SubWindows/WindowManager';
 
-export default function Footer() {
+type FooterProps = {
+  windows: WindowData []
+  spawnWindow: (type:string, label:string) => void
+}
+
+export default function Footer({
+  windows,
+  spawnWindow
+}:FooterProps) {
   
   const footerRef = useRef<HTMLDivElement>(null);
   const revealHeight = 100; //px from bottom that triggers reveal
   let footerVisible = false;
 
-  const topButtons = ['Alphabet', 'Language', 'Letter', 'Games'];
-  const bottomButtons = ['Basic States', 'Symbols', 'Lexicon', 'Summary', 'Timeline'];
 
-  const renderButtons = (labels: string[]) =>
-    labels.map((label, i) => (
-        <button
+  const topButtons = [
+    {type:"comparison", label:"Compare Scripts"},
+    {type:"map", label:"Maps"},
+    {type:"conjugate", label:"Conjugate"},
+    {type:"games", label:"Games"},
+  ];
+
+  const bottomButtons = [
+    {type:"basicStates", label:"Basic States"},
+    {type:"symbols", label:"Symbols"},
+    {type:"lexicon", label:"Lexicon"},
+    {type:"summary", label:"Summary"},
+    {type:"about", label:"About"},
+  ];
+
+  const renderButtons = (buttons: {type:string, label:string}[]) =>
+    buttons.map((btn, i) => {
+        const active = windows.some(w => w.type == btn.type);
+
+        return(<button
             key={i}
-            onClick={() => alert(`Clicked on ${label}`)}
+            disabled={active}
+            onClick={() => spawnWindow(btn.type, btn.label)}
             className="w-full h-full bg-gray-200 hover:bg-gray-300 active:bg-gray-400 transition-colors duration-200"
             >
-            {label}
+            {btn.label}
         </button>
-  ));
+        );
+    }
+  );
 
   useEffect(() => {
     const footer = footerRef.current;

@@ -8,7 +8,7 @@ import { ContainerDimensions, createEmptyContainerDims } from "@/types/MetaTypes
 import { ScriptMapTreeNode } from "@/types/ScriptMapTreeNode";
 import gsap from "gsap";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import DiceContainer, { DiceContainerHandle } from "./DiceContainer";
+import DiceContainer, { DiceContainerHandle } from "./DiceGrid/DiceContainer";
 import { Script } from "@/types/Script";
 
 

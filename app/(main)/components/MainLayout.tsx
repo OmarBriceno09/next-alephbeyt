@@ -8,6 +8,8 @@ import { MapTreeNode } from '@/types/MapTreeNode';
 import { ScriptMapTreeNode } from '@/types/ScriptMapTreeNode';
 import MapTree, { MapTreeHandle } from './MapTree';
 
+import WindowManager from './SubWindows/WindowManager';
+
 const SWITCHROTTIME = 0.5;
 
 function stringToMapEdge( pointsTo: string, mapTreeLength: number): number[] {
@@ -149,7 +151,7 @@ export default function MainLayout(
     useEffect(() => { // for scaling open cubes
         const handleResize = () => {
             const defDims = createEmptyContainerDims();
-            defDims.width = document.documentElement.clientWidth;
+            defDims.width = document.documentElement.clientWidth;0
             defDims.height = window.innerHeight*0.75;
             //setDefaultDims(defDims);
             
@@ -205,16 +207,16 @@ export default function MainLayout(
                     ))}
                 </select>
             </div>
-            <div
-                className="footerSpace w-full h-[10vh]"
-            >
-            </div>
 
+            
             {/*<div
                 className="w-full h-500"
                 style = {{backgroundColor: "#802b80ff",}}
             >
             </div>*/}
+
+            {/*Window Manager and Footer !!!*/}
+            <WindowManager/>
         </div>
     );
   }
