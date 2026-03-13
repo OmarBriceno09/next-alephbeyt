@@ -37,17 +37,17 @@ export default function WindowManager({
     const renderWindowContent = (type: string) => {
         switch(type){
             case "comparison":
-                return(<ScriptComparison scripts={scripts}/>)
+                return(<ScriptComparison scripts={scripts}/>);
             
             case "map":
                 return(<div>
                     <h1>embedded map should go here.</h1>
-                </div>)
+                </div>);
 
             case "conjugate":
                 return(<div>
                     <h1>This window is for conjugations.</h1>
-                </div>)
+                </div>);
             
             default:
                 return null;

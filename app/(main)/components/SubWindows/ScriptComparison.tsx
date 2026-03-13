@@ -11,7 +11,9 @@ export default function ScriptComparison({
 
     return(
         <div>
-            <h1>comparison content haha. hahaha XD</h1>
+            {scripts.map((script, i) => {
+                return(<h2 key={'script-title-'+i}>{script.title}</h2>);
+            })}
         </div>
     );
 }
