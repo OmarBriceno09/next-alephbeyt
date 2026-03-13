@@ -208,15 +208,19 @@ export default function MainLayout(
                 </select>
             </div>
 
-            
-            {/*<div
-                className="w-full h-500"
-                style = {{backgroundColor: "#802b80ff",}}
-            >
-            </div>*/}
-
             {/*Window Manager and Footer !!!*/}
-            <WindowManager/>
+            <WindowManager
+                scripts={scripts}
+            />
+
+            {/*Spacer for footer */}
+            <div
+                className="w-full h-6"
+                style = {{
+                    //backgroundColor: "#802b80ff",
+                }}
+            >
+            </div>
         </div>
     );
   }

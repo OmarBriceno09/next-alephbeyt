@@ -5,6 +5,10 @@ import Footer from "../Footer"
 import gsap from "gsap"
 import ScrollToPlugin from "gsap/ScrollToPlugin";
 import {Flip} from "gsap/Flip"
+import { Script } from "@/types/Script";
+import ScriptComparison from "./ScriptComparison";
+
+
 
 gsap.registerPlugin(Flip)
 gsap.registerPlugin(ScrollToPlugin);
@@ -17,34 +21,38 @@ export type WindowData  = {
   closing?: boolean
 }
 
-function renderWindowContent(type: string) {
-    switch(type){
-        case "comparison":
-            return(<div>
-                <h1>comparison content haha.</h1>
-            </div>)
-        
-        case "map":
-            return(<div>
-                <h1>embedded map should go here.</h1>
-            </div>)
-
-        case "conjugate":
-            return(<div>
-                <h1>This window is for conjugations.</h1>
-            </div>)
-        
-        default:
-            return null;
-    }
-
+type WindowManagerProps = {
+    scripts: Script [],
 }
 
-export default function WindowManager() {
+export default function WindowManager({
+    scripts,
+}:WindowManagerProps) {
 
     const containerRef = useRef<HTMLDivElement>(null);
     const wrapperRef = useRef<HTMLDivElement>(null);
-    const [windows, setWindows] = useState<WindowData[]>([])
+    const [windows, setWindows] = useState<WindowData[]>([]);
+
+
+    const renderWindowContent = (type: string) => {
+        switch(type){
+            case "comparison":
+                return(<ScriptComparison scripts={scripts}/>)
+            
+            case "map":
+                return(<div>
+                    <h1>embedded map should go here.</h1>
+                </div>)
+
+            case "conjugate":
+                return(<div>
+                    <h1>This window is for conjugations.</h1>
+                </div>)
+            
+            default:
+                return null;
+    }
+    }
 
 
     const runFlip = (update: () => void) => {
