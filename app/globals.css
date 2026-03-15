@@ -153,6 +153,17 @@ body {
   font-size: var(--modal-text-size-sm);/*clamp(0.5rem,1vw,1rem);*/
 }
 
+.image-compscript-scale {
+  width: 30px;
+  height: 30px;
+}
+
+.text-compscript-scale {
+  font-size: 30px;/*clamp(0.5rem,1vw,1rem);*/
+  width: 30px;
+  text-align: center;
+}
+
 .letter-modal {
   --color-default: #f5f5f5;
   --color-sat: #ccc;

@@ -11,6 +11,36 @@ interface CarouselBoxProps{
     scriptChange: (newScriptIndex: number) => void;
 }
 
+//Should probably move this function as a meta function... re-factor later
+export function renderLetterBoxDisplay(
+    letterDisplay: LetterDisplay, 
+    scaletype: string,
+    baseStyle: string,
+){
+    if (letterDisplay.font === 'url'){
+        return(
+        <h1 className={`img-glyph-container transition-all duration-100 ${baseStyle}`}>
+        <img
+            src={letterDisplay.display}
+            alt="letter-img"
+            className = {`image-${scaletype} object-contain`}
+        />
+        </h1>);
+    } else {
+        return(
+        <h1 className={`img-glyph-container transition-all duration-100 ${baseStyle}`}>
+            <span
+                className= {`inline-block leading-none text-${scaletype}`}
+                style={{ fontFamily: `${letterDisplay.font}, sans-serif` }}
+            >
+                {letterDisplay.display}
+            </span>
+        </h1>
+        );
+    }
+}
+
+
 export default function CarouselBox({
     letterDisplay,
     scaletype,
@@ -22,38 +52,9 @@ export default function CarouselBox({
     const [hovered, setHovered] = useState(false);
     
 
-    const letterBoxDisplay = (
-        letterDisplay: LetterDisplay, 
-        scaletype: string,
-        index: number,
-        selectedIndex: number
-    ) => {
-        if (!letterDisplay) return;
-
-        //If selected, fully scaled and shaded, else if hovered, partially, else least.
-        const baseStyle = (index===selectedIndex) ? "scale-100 opacity-100" : (hovered) ? "scale-97 opacity-80" : "scale-90 opacity-50";
-
-        if ( letterDisplay.font === 'url'){
-          return(
-            <h1 className={`img-glyph-container transition-all duration-100 ${baseStyle}`}>
-            <img
-              src={letterDisplay.display}
-              alt="letter-img"
-              className = {`image-${scaletype} object-contain select-none`}
-            />
-          </h1>);
-        } else {
-          return(
-            <h1 className={`img-glyph-container transition-all duration-100 ${baseStyle}`}>
-              <span
-                  className= {`inline-block select-none leading-none text-${scaletype}`}
-                  style={{ fontFamily: `${letterDisplay.font}, sans-serif` }}
-              >
-                  {letterDisplay.display}
-              </span>
-          </h1>
-          );
-        }
+    const letterBoxDisplayWithStyle = () => {
+        const baseStyle = (index===selectedIndex) ? "scale-100 opacity-100" : (hovered) ? "scale-97 opacity-80" : "scale-90 opacity-50";    
+        return renderLetterBoxDisplay(letterDisplay, scaletype, baseStyle+" select-none"); //<= very hacky but suprisingle works haha
     };
 
 
@@ -66,7 +67,7 @@ export default function CarouselBox({
             onMouseLeave={() => setHovered(false)}
             onClick={() => scriptChange(index)}
         >
-            {letterBoxDisplay(letterDisplay, scaletype, index, selectedIndex)}
+            {letterBoxDisplayWithStyle()}
         </div>
     )
 
