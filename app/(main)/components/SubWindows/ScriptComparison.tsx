@@ -1,55 +1,80 @@
 import { Script } from "@/types/Script";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { createEmptyLetterDisplay} from '@/types/MetaTypes';
 import { renderLetterBoxDisplay } from "../DiceGrid/LetterModal/CarouselBox";
 
-type ScriptComparisonProps = {
+interface ScriptComparisonProps {
     scripts:Script[],
 }
 
 export default function ScriptComparison({
     scripts,
 }:ScriptComparisonProps){
-    const [selScripts, setSelScripts] = useState<{scriptA:number, scriptB: number}>({scriptA:-1,scriptB:-1});
-
-    useEffect(() => {
-        if(scripts.length > 1 && selScripts.scriptA < 0 ){
-            setSelScripts({scriptA:0, scriptB:1});
-        }
-    }, [selScripts])
+    const [selScripts, setSelScripts] = useState<number[]>([0,1]); //index = row-index; value = script-index
 
     const handleScriptSel = (target:number, newScriptIndex: number) => {
         //console.log("selected: "+scripts[newScriptIndex].title);
-        const newSelScripts = {
-            scriptA: (target==0) ? newScriptIndex : selScripts.scriptA,
-            scriptB: (target==1) ? newScriptIndex : selScripts.scriptB,  
-        };
-
+        const newSelScripts = [...selScripts];
+        newSelScripts[target] = newScriptIndex;
         setSelScripts(newSelScripts);
     }
 
-    const scriptSelectorMenu = (title:string, selScriptIndex: number, scriptIndex: number) => {
+    const handleAddRow = () => {
+        const newSelScripts = [...selScripts];
+        newSelScripts.push(selScripts.length);
+        setSelScripts(newSelScripts);
+    }
+
+    const handleRemoveRow = () => {
+        const newSelScripts = [...selScripts];
+        newSelScripts.pop();
+        setSelScripts(newSelScripts);
+    }
+
+    const scriptSelectorRow = (selScriptIndex: number) => {
+        const scriptIndex  = selScripts[selScriptIndex];
+        
         return(
-            <div>
-                <h1>{title}</h1>
-                <select
-                    onChange={(e)=>handleScriptSel(selScriptIndex, e.target.selectedIndex)}
-                    value={scripts[scriptIndex]?.title || ''}
-                    className="p-1 border rounded mb-0"
+            <div key={`csindex-${selScriptIndex}`} className="flex items-center gap-2">
+                <div>
+                    <h2 className="w-5 text-center">{selScriptIndex+": "}</h2>
+                </div>
+                <div>
+                    <select
+                        onChange={(e)=>handleScriptSel(selScriptIndex, e.target.selectedIndex)}
+                        value={scripts[scriptIndex]?.title || ''}
+                        className="p-1 border rounded mb-0"
+                        style={{
+                            height:"min-content",
+                        }}
+                    >
+                        {scripts.map((script, idx) => (
+                            <option key={idx} value={script.title}>
+                                {script.title}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+                
+                {/*not sure how to fix this ://// */}
+                {/*<div 
+                    className=""
+                    style={{
+                        //backgroundColor: "#ccc"
+                    }}
                 >
-                    {scripts.map((script, idx) => (
-                        <option key={idx} value={script.title}>
-                            {script.title}
-                        </option>
-                    ))}
-                </select>
+                    <hr className="border-gray-300 my-4" />
+                </div>*/}
+                
+                <div>
+                    {scriptLettersDisplay(scriptIndex)}
+                </div>
             </div>
         );
     }
 
-    const scriptLettersDisplay = (selScriptSelect: number) => {
-        const scriptIndex = (selScriptSelect == 0) ? selScripts.scriptA : selScripts.scriptB;
+    const scriptLettersDisplay = (scriptIndex: number) => {
         const scriptLetters = (!scripts[scriptIndex]) ? [] : scripts[scriptIndex].letters;
 
         return(
@@ -78,20 +103,46 @@ export default function ScriptComparison({
         </div>
         );
     }
+    //text-white p-3 rounded-lg shadow-lg
 
     return(
-        <div>
-            {/*scripts.map((script, i) => {
-                return(<h2 key={'script-title-'+i}>{script.title}</h2>);
-            })*/}
-            <div className="ScriptSelectors">
-                {scriptSelectorMenu("Top Script", 0, selScripts.scriptA)}
-                {scriptSelectorMenu("Bottom Script", 1, selScripts.scriptB)}
-                <div className="overflow-x-auto">
-                    {scriptLettersDisplay(0)}
-                    {scriptLettersDisplay(1)}
-                </div>
+        <div 
+            className= "w-full overflow-auto"
+            style={{
+                height:"100%",
+                border:"1px solid #ddd",
+            }}
+        >
+            <div className="flex flex-col">
+                {Array.from({length: selScripts.length}, (_, i) => {
+                    return(scriptSelectorRow(i));
+                })}
             </div>
+
+            <div className="fixed bottom-10 left-0 right-0 flex justify-center gap-2">
+                <button 
+                    className="bg-gray-400 text-white p-2 rounded-lg shadow-lg hover:bg-gray-500 disabled:bg-gray-600 disabled:text-gray-500"
+                    onClick={()=>{handleAddRow()}}
+                    disabled={selScripts.length>=scripts.length}
+                >
+                    (+) add row
+                </button>
+                <button 
+                    className="bg-gray-400 text-white p-2 rounded-lg shadow-lg hover:bg-gray-500 disabled:bg-gray-600 disabled:text-gray-500"
+                    onClick={()=>{handleRemoveRow()}}
+                    disabled={selScripts.length<=0}
+                >
+                    (-) remove last
+                </button>
+                <button 
+                    className="bg-gray-400 text-white p-2 rounded-lg shadow-lg hover:bg-gray-500 disabled:bg-gray-600 disabled:text-gray-500"
+                    onClick={()=>{setSelScripts([])}}
+                    disabled={selScripts.length<=0}
+                >
+                    clear all
+                </button>
+            </div>
+
         </div>
     );
 }
