@@ -29,6 +29,11 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+body.dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
 .perspective {
   perspective: 100000px; /*for no-warping, flat looking rotation*/
   width: fit-content;
@@ -197,27 +202,12 @@ body {
 }
 
 .subWindow {
-  width: 100%;
-  height: 400px;
   /*min-height: 400px;*/
-
   /*border: 1px solid #aaa;*/
   border-radius: 8px;
+  border: 1px solid #ccc;
   background: #ececec;
   overflow: hidden;
-
-  display: flex;
-  flex-direction: column;
-}
-
-.subWindow.fullRow {
-  grid-column: span 2;
-}
-
-
-.subWindow.closing {
-  position: absolute;
-  pointer-events: none;
 }
 
 .windowHeader{
@@ -260,13 +250,81 @@ body {
     grid-template-columns:1fr;
     width: 90%;
   }
-  .subWindow.fullRow {
-    grid-column: span 1;
-  }
   .expBtn {
     visibility: hidden;
   }
 }
+
+
+/*vv RESIZE STYLES vv*/
+.resize{
+  position:absolute;
+}
+
+.resize.n{
+  top:0;
+  left:8px;
+  right:8px;
+  height:6px;
+  cursor:n-resize;
+}
+
+.resize.s{
+  bottom:0;
+  left:8px;
+  right:8px;
+  height:6px;
+  cursor:s-resize;
+}
+
+.resize.e{
+  right:0;
+  top:8px;
+  bottom:8px;
+  width:6px;
+  cursor:e-resize;
+}
+
+.resize.w{
+  left:0;
+  top:8px;
+  bottom:8px;
+  width:6px;
+  cursor:w-resize;
+}
+
+.resize.ne{
+  right:0;
+  top:0;
+  width:10px;
+  height:10px;
+  cursor:ne-resize;
+}
+
+.resize.nw{
+  left:0;
+  top:0;
+  width:10px;
+  height:10px;
+  cursor:nw-resize;
+}
+
+.resize.se{
+  right:0;
+  bottom:0;
+  width:10px;
+  height:10px;
+  cursor:se-resize;
+}
+
+.resize.sw{
+  left:0;
+  bottom:0;
+  width:10px;
+  height:10px;
+  cursor:sw-resize;
+}
+/*^^ RESIZE STYLES ^^*/
 
 @font-face {
   font-family: 'Noto Egyptian';
