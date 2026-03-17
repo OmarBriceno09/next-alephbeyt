@@ -107,7 +107,7 @@ export default function ScriptComparison({
 
     return(
         <div 
-            className= "w-full overflow-auto"
+            className= "relative w-full overflow-auto"
             style={{
                 height:"100%",
                 border:"1px solid #ddd",
@@ -117,9 +117,12 @@ export default function ScriptComparison({
                 {Array.from({length: selScripts.length}, (_, i) => {
                     return(scriptSelectorRow(i));
                 })}
+                <div className="h-10"></div>
             </div>
 
-            <div className="fixed bottom-10 left-0 right-0 flex justify-center gap-2">
+            <div 
+                className="sticky bottom-5 left-0 right-0 flex justify-center gap-2"
+            >
                 <button 
                     className="bg-gray-400 text-white p-2 rounded-lg shadow-lg hover:bg-gray-500 disabled:bg-gray-600 disabled:text-gray-500"
                     onClick={()=>{handleAddRow()}}
