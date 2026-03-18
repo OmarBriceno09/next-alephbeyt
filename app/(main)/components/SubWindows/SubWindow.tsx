@@ -114,7 +114,7 @@ export default function SubWindow({
       const bottom = startYpos + startH;
 
       if (dir.includes("e")) {
-        w = Math.max(minW, startW + dx);
+        w = Math.min(Math.max(minW, startW + dx), window.innerWidth - startXpos);
       }
 
       if (dir.includes("s")) {
@@ -122,12 +122,12 @@ export default function SubWindow({
       }
 
       if (dir.includes("w")) {
-        x = Math.min(startXpos + dx, right - minW);
+        x = Math.min(Math.max(startXpos + dx, 0), right - minW);
         w = right - x;
       }
 
       if (dir.includes("n")) {
-        y = Math.min(startYpos + dy, bottom - minH);
+        y = Math.min(Math.max(startYpos + dy, 0), bottom - minH);
         h = bottom - y;
       }
 
