@@ -24,6 +24,8 @@ export default function DockColumn({
     onClose,
     renderWindowContent
 }:DockColumnProps) {
+
+    console.log("which side?: ", side);
     return (
         <div
         className="h-full flex flex-col border"

@@ -53,7 +53,7 @@ export default function WindowManager({
 
     const containerRef = useRef<HTMLDivElement>(null);
     const [windows, setWindows] = useState<WindowData[]>([]);
-    const [dockLayout, setDockLayout] = useState<DockLayout>({
+    const [dockLayout] = useState<DockLayout>({//setDockLayout
         left: [],
         right: [],
         leftWidth: 0.33,
