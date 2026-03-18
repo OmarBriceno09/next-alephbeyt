@@ -1,5 +1,5 @@
 import {getAlephBeytData} from '@/sanity/sanity-utils'
-import MainLayout from './components/MainLayout';
+import WindowManager from './components/WindowManager';
 
 export default async function Home() {
   const fetchedData = await getAlephBeytData();
@@ -7,7 +7,7 @@ export default async function Home() {
 
   return (
     <div className="min-h-screen overflow-hidden bg-white text-black flex flex-col items-center py-5">
-      <MainLayout
+      <WindowManager
         scripts={fetchedData.scripts}
         mapTreeNodes={fetchedData.mapTreeNodes}
       />

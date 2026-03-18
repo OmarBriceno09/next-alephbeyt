@@ -10,12 +10,15 @@
       mouseup -> commit final values to react state (updateWindow(..x and y))
 
 */
+"use client";
+
 import { useRef } from "react"
-import { WindowData } from "./WindowManager"
+import { WindowData } from "../WindowManager"
 import gsap from "gsap"
 
 type SubWindowProps = {
   win: WindowData
+  docked: boolean
   bringToFront: (id: string) => void
   updateWindow: (id: string, data: Partial<WindowData>) => void
   onClose: (id: string) => void
@@ -24,13 +27,15 @@ type SubWindowProps = {
 
 export default function SubWindow({
   win,
+  docked,
   bringToFront,
   updateWindow,
   onClose,
   children
 }:SubWindowProps){
 
-  const ref = useRef<HTMLDivElement>(null)
+  const ref = useRef<HTMLDivElement>(null);
+  const isDocked = docked ?? (win.mode === "docked");
 
   const startDrag = (e:React.MouseEvent) => {
 
@@ -166,12 +171,19 @@ export default function SubWindow({
     <div
       ref={ref}
       data-flip-id={win.id}
-      className="absolute shadow-xl flex flex-col pointer-events-auto subWindow"
-      style={{
-        transform:`translate(${win.x}px,${win.y}px)`,
-        width: win.width,
-        height: win.height,
-        zIndex: win.z
+      className={`shadow-xl flex flex-col pointer-events-auto subWindow ${isDocked ? "docked" : "floating"}`}
+      style={
+        isDocked
+        ? {
+          width: "100%",
+          height: "100%"
+        }
+      : {
+          transform:`translate(${win.x}px,${win.y}px)`,
+          width: win.width,
+          height: win.height,
+          position:"absolute",
+          zIndex: win.z
       }}
       onMouseDown={() => bringToFront(win.id)}
     >

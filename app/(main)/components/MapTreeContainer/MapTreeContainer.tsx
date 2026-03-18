@@ -8,8 +8,6 @@ import { MapTreeNode } from '@/types/MapTreeNode';
 import { ScriptMapTreeNode } from '@/types/ScriptMapTreeNode';
 import MapTree, { MapTreeHandle } from './MapTree';
 
-import WindowManager from './SubWindows/WindowManager';
-
 const SWITCHROTTIME = 0.5;
 
 function stringToMapEdge( pointsTo: string, mapTreeLength: number): number[] {
@@ -38,7 +36,7 @@ function stringToMapEdge( pointsTo: string, mapTreeLength: number): number[] {
 }
 
 
-export default function MainLayout(
+export default function MapTreeContainer(
     { 
         scripts, 
         mapTreeNodes 
@@ -74,17 +72,14 @@ export default function MainLayout(
             if(scriptOptions.length > 0 && selectedScriptIndex<0){
             
                 const defDims = createEmptyContainerDims();
+                /**TODO: make sure the width to be determined by the DockRendered is determined here*/
                 defDims.width = document.documentElement.clientWidth;
                 defDims.height = window.innerHeight*0.75;
-                //setDefaultDims(defDims);
-                //this one will also set the diceContainer
 
                 const startIndex = 1;
                 setSelectedScriptIndex(startIndex);
                 SelectedScriptTitleRef.current?.handleScriptChange(startIndex);
                 
-                //limit treeDims here
-                //if(defDims.width < 912) defDims.width = 912;
                 MapTreeRefHandle.current?.setupTreeContainerDimensions(defDims, startIndex, scriptOptions);
             }
         }
@@ -136,9 +131,9 @@ export default function MainLayout(
 
 
     const handleSwitchToScriptTreeView = async (toTreeView: boolean) => {
-        console.log("SETTING TOTREEVIEW: ", toTreeView);
         setToTreeView(toTreeView);
         const defDims = createEmptyContainerDims();
+        /**TODO: make sure the width to be determined by the DockRendered is determined here*/
         defDims.width = document.documentElement.clientWidth;
         defDims.height = window.innerHeight*0.75;
 
@@ -151,12 +146,10 @@ export default function MainLayout(
     useEffect(() => { // for scaling open cubes
         const handleResize = () => {
             const defDims = createEmptyContainerDims();
+            /**TODO: make sure the width to be determined by the DockRendered is determined here*/
             defDims.width = document.documentElement.clientWidth;
             defDims.height = window.innerHeight*0.75;
-            //setDefaultDims(defDims);
-            
-            //limit treeDims here
-            //if(defDims.width < 912) defDims.width = 912;
+        
             MapTreeRefHandle.current?.setTreeContainerDimensions(defDims);
         };
         window.addEventListener('resize', handleResize);
@@ -208,14 +201,9 @@ export default function MainLayout(
                 </select>
             </div>
 
-            {/*Window Manager and Footer !!!*/}
-            <WindowManager
-                scripts={scripts}
-            />
-
             {/*Spacer for footer */}
             <div
-                className="w-full h-6"
+                className="w-full h-5"
                 style = {{
                     //backgroundColor: "#802b80ff",
                 }}
@@ -223,4 +211,4 @@ export default function MainLayout(
             </div>
         </div>
     );
-  }
+}

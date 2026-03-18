@@ -1,13 +1,16 @@
+"use client";
+
 import { useRef, useState } from "react"
-import SubWindow from "./SubWindow"
-import Footer from "../Footer"
+import SubWindow from "./SubWindows/SubWindow"
+import Footer from "./Footer"
 
 import gsap from "gsap"
 import ScrollToPlugin from "gsap/ScrollToPlugin";
 import {Flip} from "gsap/Flip"
 import { Script } from "@/types/Script";
-import ScriptComparison from "./ScriptComparison";
-
+import ScriptComparison from "./SubWindows/ScriptComparison";
+import { MapTreeNode } from "@/types/MapTreeNode";
+import DockRenderer from "./SubWindows/DockRenderer";
 
 
 gsap.registerPlugin(Flip)
@@ -17,23 +20,45 @@ export type WindowData  = {
   id: string
   label: string
   type: string
+  mode: "floating" | "docked"
+
+  //floating
   x: number
   y:number
   width: number
   height: number
   z: number
+  //docking
+  dockSide?: "left" | "right"
 }
+
+export type DockSide = "left" | "right";
+
+export type DockLayout = {
+  left: string[][];   // rows of window IDs
+  right: string[][];
+  leftWidth: number;  // 0–1
+  rightWidth: number;
+};
 
 type WindowManagerProps = {
     scripts: Script [],
+    mapTreeNodes: MapTreeNode[]
 }
 
 export default function WindowManager({
     scripts,
+    mapTreeNodes
 }:WindowManagerProps) {
 
     const containerRef = useRef<HTMLDivElement>(null);
     const [windows, setWindows] = useState<WindowData[]>([]);
+    const [dockLayout, setDockLayout] = useState<DockLayout>({
+        left: [],
+        right: [],
+        leftWidth: 0.33,
+        rightWidth: 0.33,
+    });
     const topZ = useRef(1);
 
     const renderWindowContent = (type: string) => {
@@ -100,6 +125,7 @@ export default function WindowManager({
                     id: crypto.randomUUID(),
                     type,
                     label,
+                    mode:"floating",
                     x:spawnX,
                     y:spawnY,
                     width:spawnW,
@@ -145,7 +171,20 @@ export default function WindowManager({
     }
 
     return (
-    <>
+    <div className="w-full h-full flex">
+
+        <DockRenderer
+            windows={windows}
+            layout={dockLayout}
+            scripts={scripts}
+            mapTreeNodes={mapTreeNodes}
+            bringToFront={bringToFront}
+            updateWindow={updateWindow}
+            onClose={closeWindow}
+            renderWindowContent={renderWindowContent}
+        />
+
+        
         <div 
             ref={containerRef}
             className="fixed inset-0 pointer-events-none"
@@ -155,6 +194,7 @@ export default function WindowManager({
                 <SubWindow
                 key={win.id}
                 win={win}
+                docked={false}
                 bringToFront={bringToFront}
                 updateWindow={updateWindow}
                 onClose={closeWindow}
@@ -168,6 +208,6 @@ export default function WindowManager({
         </div>
 
         <Footer windows={windows} spawnWindow={spawnWindow} />
-    </>
+    </div>
     )
 }

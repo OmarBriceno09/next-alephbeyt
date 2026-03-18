@@ -2,7 +2,7 @@ import { Script } from "@/types/Script";
 import { useState } from "react";
 
 import { createEmptyLetterDisplay} from '@/types/MetaTypes';
-import { renderLetterBoxDisplay } from "../DiceGrid/LetterModal/CarouselBox";
+import { renderLetterBoxDisplay } from "../MapTreeContainer/DiceGrid/LetterModal/CarouselBox";
 
 interface ScriptComparisonProps {
     scripts:Script[],

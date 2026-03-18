@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import gsap from "gsap";
-import { WindowData  } from './SubWindows/WindowManager';
+import { WindowData  } from './WindowManager';
 
 type FooterProps = {
   windows: WindowData []
@@ -92,7 +92,7 @@ export default function Footer({
   return (
     <footer 
       ref={footerRef}
-      className="fixed bottom-0 left-0 w-full h-[7vh] z-50 pointer-events-auto"
+      className="fixed bottom-0 left-0 w-full h-18 z-50 pointer-events-auto"
     >
       <div className="grid grid-rows-2 h-full">
         {/* Top Row (4 buttons) */}
