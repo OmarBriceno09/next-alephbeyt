@@ -6,7 +6,7 @@ import { WindowData  } from './SubWindows/WindowManager';
 
 type FooterProps = {
   windows: WindowData []
-  spawnWindow: (type:string, label:string) => void
+  spawnWindow: (type:string, label:string, relpos:number) => void
 }
 
 export default function Footer({
@@ -41,7 +41,7 @@ export default function Footer({
         return(<button
             key={i}
             disabled={active}
-            onClick={() => spawnWindow(btn.type, btn.label)}
+            onClick={() => spawnWindow(btn.type, btn.label, i/(buttons.length-1))}//i/(buttons.length-1) to normalize
             className="w-full h-full bg-gray-200 hover:bg-gray-300 active:bg-gray-400 transition-colors duration-200"
             >
             {btn.label}

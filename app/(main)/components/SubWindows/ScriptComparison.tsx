@@ -107,7 +107,7 @@ export default function ScriptComparison({
 
     return(
         <div 
-            className= "relative w-full overflow-auto"
+            className= "relative w-full overflow-auto bg-white"
             style={{
                 height:"100%",
                 border:"1px solid #ddd",

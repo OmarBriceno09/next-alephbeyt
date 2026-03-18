@@ -80,9 +80,18 @@ export default function WindowManager({
         }); 
     }
 
-    const spawnWindow = (type:string,label:string) => {
+    const spawnWindow = (type:string,label:string, relpos: number) => {
 
         const z = ++topZ.current
+
+        const spawnW = 420;
+        const spawnH = 320;
+        const marginX = 100;
+        const marginY = 100;
+        const spawnX = marginX + relpos * (window.innerWidth - 2 * marginX - spawnW);
+        const spawnY = marginY + (Math.sin(relpos*(2*Math.PI))/2+0.5) * (window.innerHeight - 2 * marginY - spawnH);
+
+        console.log(spawnX);
 
         runFlip(() => {
             setWindows(prev => [
@@ -91,10 +100,10 @@ export default function WindowManager({
                     id: crypto.randomUUID(),
                     type,
                     label,
-                    x:400,
-                    y:300,
-                    width:420,
-                    height:320,
+                    x:spawnX,
+                    y:spawnY,
+                    width:spawnW,
+                    height:spawnH,
                     z
                 }
             ]);
