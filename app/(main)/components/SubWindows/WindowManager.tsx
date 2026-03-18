@@ -32,6 +32,7 @@ export default function WindowManager({
     scripts,
 }:WindowManagerProps) {
 
+    const containerRef = useRef<HTMLDivElement>(null);
     const [windows, setWindows] = useState<WindowData[]>([]);
     const topZ = useRef(1);
 
@@ -55,23 +56,49 @@ export default function WindowManager({
         }
     }
 
+   
+    const runFlip = (update: () => void) => {
+        const state = Flip.getState(containerRef.current!.querySelectorAll(".subWindow"));
+        update();
+        requestAnimationFrame(() => {
+
+            Flip.from(state, {
+                duration: 0.25,
+                ease: "power2.inOut",
+                absolute: true,
+                targets:".subWindow",
+
+                onEnter: (elements) => {
+                    gsap.fromTo(
+                        elements,
+                        { opacity: 0, scale: 0.9 },
+                        { opacity: 1, scale: 1, duration: 0.25 }
+                    );
+                },
+            });
+
+        }); 
+    }
+
     const spawnWindow = (type:string,label:string) => {
 
         const z = ++topZ.current
 
-        setWindows(prev => [
-            ...prev,
-            {
-                id: crypto.randomUUID(),
-                type,
-                label,
-                x:200,
-                y:120,
-                width:420,
-                height:320,
-                z
-            }
-        ])
+        runFlip(() => {
+            setWindows(prev => [
+                ...prev,
+                {
+                    id: crypto.randomUUID(),
+                    type,
+                    label,
+                    x:400,
+                    y:300,
+                    width:420,
+                    height:320,
+                    z
+                }
+            ]);
+        });
     }
 
 
@@ -94,12 +121,26 @@ export default function WindowManager({
     }
     
     const closeWindow = (id:string) => {
-        setWindows(prev => prev.filter(w=>w.id!==id))
+        const el = containerRef.current?.querySelector(`[data-flip-id="${id}"]`);
+        if(!el) return;
+
+        gsap.to(el, {
+            opacity:0,
+            scale:0.9,
+            duration:0.2,
+            ease:"power2.inOut",
+            onComplete:()=>{
+                setWindows(prev => prev.filter(w=>w.id!==id));
+            }
+        });
     }
 
     return (
     <>
-        <div className="fixed inset-0 pointer-events-none">
+        <div 
+            ref={containerRef}
+            className="fixed inset-0 pointer-events-none"
+        >
             {windows.map(win => (
 
                 <SubWindow

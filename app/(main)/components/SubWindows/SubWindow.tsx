@@ -6,12 +6,13 @@
   After - To avoid the overdraw issue, I re-designed it so that dragging doesn't cause react to 
     re-render, and the react state should only update after interactions finish. So the flow looks
     like this:
-      mousemove -> update DOM style directly (`translate(${x}px,${y}px)`)
+      mousemove -> update DOM style directly (gsap.set(el, {... x and y}))
       mouseup -> commit final values to react state (updateWindow(..x and y))
 
 */
 import { useRef } from "react"
 import { WindowData } from "./WindowManager"
+import gsap from "gsap"
 
 type SubWindowProps = {
   win: WindowData
@@ -54,7 +55,10 @@ export default function SubWindow({
       const x = Math.min(Math.max(startLeft + dx, 0), window.innerWidth-win.width);
       const y = Math.min(Math.max(startTop + dy, 0), window.innerHeight-100); //I will allow window hiding below
 
-      el.style.transform = `translate(${x}px,${y}px)`;
+      gsap.set(el,{
+        x: x,
+        y: y
+      });
     }
 
     const up = (ev:MouseEvent) => {
@@ -131,9 +135,12 @@ export default function SubWindow({
         h = bottom - y;
       }
 
-      el.style.transform = `translate(${x}px, ${y}px)`;
-      el.style.width = `${w}px`;
-      el.style.height = `${h}px`;
+      gsap.set(el,{
+        x: x,
+        y: y,
+        width: w,
+        height: h,
+      });
     }
 
 
@@ -158,7 +165,8 @@ export default function SubWindow({
   return (
     <div
       ref={ref}
-      className="subWindow absolute shadow-xl flex flex-col pointer-events-auto"
+      data-flip-id={win.id}
+      className="absolute shadow-xl flex flex-col pointer-events-auto subWindow"
       style={{
         transform:`translate(${win.x}px,${win.y}px)`,
         width: win.width,
