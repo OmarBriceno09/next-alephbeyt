@@ -6,7 +6,14 @@ export default async function Home() {
 
 
   return (
-    <div className="min-h-screen overflow-hidden bg-white text-black flex flex-col items-center py-5">
+    <div 
+      className="overflow-hidden bg-white text-black flex flex-col items-center"
+      style={{
+        height: "100vh",
+        maxHeight: "100dvh",
+        overscrollBehavior: "none"
+      }}
+    >
       <WindowManager
         scripts={fetchedData.scripts}
         mapTreeNodes={fetchedData.mapTreeNodes}

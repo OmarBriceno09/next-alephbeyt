@@ -67,6 +67,7 @@ interface DiceContainerProps {
 export type DiceContainerHandle = {
     setupTheGrid: (scriptIndex: number, scriptOption: string, ContainerDims: ContainerDimensions) => Promise<void>;
     setContainerDimensions: (DefaultDims: ContainerDimensions) => Promise<void>
+    animateContainerDimensions: (ContainerDims: ContainerDimensions, alpha: number, time:number) => Promise<void>
     handleToMinimize: (isMinimized:boolean, DefaultDims: ContainerDimensions, time:number) => Promise<void>;
     handleScriptChange: (newScriptIndex: number) => Promise<void>;
     setMiniScreenSelectable: (isSelectable:boolean) => void;
@@ -140,6 +141,7 @@ const DiceContainer = forwardRef<DiceContainerHandle, DiceContainerProps>(
                 );
             }));
         };
+
 
         const animateContainerDimensions = async (ContainerDims: ContainerDimensions, alpha: number, time:number): Promise<void> => {
             containerDimensions.current = ContainerDims;
@@ -715,6 +717,7 @@ const DiceContainer = forwardRef<DiceContainerHandle, DiceContainerProps>(
         useImperativeHandle(ref, () => ({
             setupTheGrid,
             setContainerDimensions,
+            animateContainerDimensions,
             handleToMinimize,
             handleScriptChange,
             setMiniScreenSelectable

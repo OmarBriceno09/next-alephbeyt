@@ -22,6 +22,7 @@ type SubWindowProps = {
   bringToFront: (id: string) => void
   updateWindow: (id: string, data: Partial<WindowData>) => void
   onClose: (id: string) => void
+  handleDragEnd: (id: string, x: number, y: number) => void
   children: React.ReactNode
 }
 
@@ -31,6 +32,7 @@ export default function SubWindow({
   bringToFront,
   updateWindow,
   onClose,
+  handleDragEnd,
   children
 }:SubWindowProps){
 
@@ -78,6 +80,8 @@ export default function SubWindow({
         y: Math.min(Math.max(startTop + dy, 0), window.innerHeight-100)
       });
 
+      handleDragEnd(win.id, ev.clientX, ev.clientY);
+
       window.removeEventListener("mousemove",move);
       window.removeEventListener("mouseup",up);
     }
@@ -91,7 +95,6 @@ export default function SubWindow({
     e:React.MouseEvent,
     dir:string
   ) => {
-
     e.stopPropagation();
     // disable text selection
     document.body.classList.add("dragging");
@@ -176,7 +179,7 @@ export default function SubWindow({
         isDocked
         ? {
           width: "100%",
-          height: "100%"
+          height: "100%",
         }
       : {
           transform:`translate(${win.x}px,${win.y}px)`,
@@ -204,15 +207,20 @@ export default function SubWindow({
       </div>
 
       {/*Resize Handles*/}
-      <div className="resize n" onMouseDown={(e)=>startResize(e,"n")} />
-      <div className="resize s" onMouseDown={(e)=>startResize(e,"s")} />
-      <div className="resize e" onMouseDown={(e)=>startResize(e,"e")} />
-      <div className="resize w" onMouseDown={(e)=>startResize(e,"w")} />
-      <div className="resize ne" onMouseDown={(e)=>startResize(e,"ne")} />
-      <div className="resize nw" onMouseDown={(e)=>startResize(e,"nw")} />
-      <div className="resize se" onMouseDown={(e)=>startResize(e,"se")} />
-      <div className="resize sw" onMouseDown={(e)=>startResize(e,"sw")} />
-
+      {(!isDocked) ?(
+          <>
+            <div className="resize n" onMouseDown={(e)=>startResize(e,"n")} />
+            <div className="resize s" onMouseDown={(e)=>startResize(e,"s")} />
+            <div className="resize e" onMouseDown={(e)=>startResize(e,"e")} />
+            <div className="resize w" onMouseDown={(e)=>startResize(e,"w")} />
+            <div className="resize ne" onMouseDown={(e)=>startResize(e,"ne")} />
+            <div className="resize nw" onMouseDown={(e)=>startResize(e,"nw")} />
+            <div className="resize se" onMouseDown={(e)=>startResize(e,"se")} />
+            <div className="resize sw" onMouseDown={(e)=>startResize(e,"sw")} />
+          </>
+        ):(
+          <></>
+      )}
     </div>
   );
 }

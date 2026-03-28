@@ -58,6 +58,7 @@ export type MapTreeHandle = {
     handleToOpenTree: (toOpen:boolean, DefaultDims: ContainerDimensions, time:number) => Promise<void>;
     setupTreeContainerDimensions: (DefaultDims: ContainerDimensions, startIndex:number, scriptOptions: string[]) => Promise<void>
     setTreeContainerDimensions: (DefaultDims: ContainerDimensions) => Promise<void>
+    animateDiceContainerDimensions: (DefaultDims: ContainerDimensions, duration:number) => Promise<void>
     handleScriptChange: (newScriptIndex: number) => Promise<void>;
 };
 
@@ -142,7 +143,6 @@ const MapTree = forwardRef<MapTreeHandle, MapTreeProps>(
         const setTreeContainerDimensions = async (DefaultDims: ContainerDimensions): Promise<void> => {
             const recalculateDims : ContainerDimensions = {...DefaultDims};
             
-            console.log(DefaultDims.x);
             setMapTreeContainerDims(recalculateDims);
             DiceContainerRefHandle.current?.setContainerDimensions(DefaultDims);
             return new Promise((resolve => {
@@ -159,6 +159,28 @@ const MapTree = forwardRef<MapTreeHandle, MapTreeProps>(
                     },
                 );
             }));
+        };
+
+        const animateDiceContainerDimensions = async (DefaultDims: ContainerDimensions, duration: number): Promise<void> => {
+            const recalculateDims : ContainerDimensions = {...DefaultDims};
+            
+            setMapTreeContainerDims(recalculateDims);
+            DiceContainerRefHandle.current?.animateContainerDimensions(DefaultDims, 1, duration);
+            /*return new Promise((resolve => {
+                gsap.set(
+                    MapTreeRef.current,
+                    {
+                        width: recalculateDims.width,
+                        height: recalculateDims.height,
+                        x: recalculateDims.x,
+                        y: recalculateDims.y,
+                        onComplete: () => {
+                            resolve();
+                        }
+                    },
+                );
+            }));*/
+
         };
 
 
@@ -192,6 +214,7 @@ const MapTree = forwardRef<MapTreeHandle, MapTreeProps>(
             handleToOpenTree,
             setupTreeContainerDimensions,
             setTreeContainerDimensions,
+            animateDiceContainerDimensions,
             handleScriptChange,
         }));
         

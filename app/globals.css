@@ -201,6 +201,10 @@ body.dragging {
   width: 100%;
 }
 
+/* {
+  outline: 1px solid red;
+}*/
+
 .subWindow {
   /*min-height: 400px;*/
   /*border: 1px solid #aaa;*/
@@ -325,6 +329,20 @@ body.dragging {
   cursor:sw-resize;
 }
 /*^^ RESIZE STYLES ^^*/
+
+.dock-column{
+  height: 100vh;
+  position: relative;/*important for w e scale handler*/
+  display: flex;
+  flex-direction: column;
+}
+
+.dock-row {
+  width: 100%;
+  position: relative;
+  /*background: #ff0000;*/
+}
+
 
 @font-face {
   font-family: 'Noto Egyptian';

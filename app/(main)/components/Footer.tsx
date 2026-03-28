@@ -92,7 +92,7 @@ export default function Footer({
   return (
     <footer 
       ref={footerRef}
-      className="fixed bottom-0 left-0 w-full h-18 z-50 pointer-events-auto"
+      className="fixed bottom-0 left-0 w-full h-18 z-50 pointer-events-auto z-20"
     >
       <div className="grid grid-rows-2 h-full">
         {/* Top Row (4 buttons) */}
