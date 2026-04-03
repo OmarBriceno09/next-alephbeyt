@@ -146,7 +146,7 @@ export default function DockColumn({
                 handleDragEnd={handleDragEnd}
                 renderWindowContent={renderWindowContent}
                 undockWindow={undockWindow}
-                animOpenCloseCol={animateOpenClose}
+                //animOpenCloseCol={animateOpenClose}
                 />
             ))}
             {side=="right" ? (

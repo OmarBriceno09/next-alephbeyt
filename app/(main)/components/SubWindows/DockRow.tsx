@@ -1,7 +1,6 @@
 import { useMemo, useRef } from "react"
 import { WindowData, Row} from "../WindowManager"
 import SubWindow from "./SubWindow"
-import gsap from "gsap"
 
 
 interface DockRowProps {
@@ -14,7 +13,7 @@ interface DockRowProps {
     handleDragEnd: (id: string, x: number, y: number) => void
     renderWindowContent: (type: string) => React.ReactNode
     undockWindow: (id: string, y: number) => void
-    animOpenCloseCol: (state: "open"|"close", duration: number) => void
+    //animOpenCloseCol: (state: "open"|"close", duration: number) => void
 };
 
 
@@ -28,7 +27,7 @@ export default function DockRow({
     handleDragEnd,
     renderWindowContent,
     undockWindow,
-    animOpenCloseCol
+    //animOpenCloseCol
 }:DockRowProps) {
     const ref = useRef<HTMLDivElement>(null);
 
