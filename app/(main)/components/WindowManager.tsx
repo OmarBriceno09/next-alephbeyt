@@ -34,9 +34,14 @@ export type WindowData  = {
 
 export type DockSide = "left" | "right";
 
+export type Row = {
+    id: string; //id
+    size: number; //ratio from 0.0-1.0
+};
+
 export type DockLayout = {
-  left: string[][];   // rows of window IDs
-  right: string[][];
+  left: Row[];   // rows of window IDs
+  right: Row[];
   leftWidth: number;
   rightWidth: number;
   middleWidth: number;
@@ -171,14 +176,8 @@ export default function WindowManager({
         );
     }
 
-    /*const updateDockLayout = (data: Partial<DockLayout>) => {
-        setDockLayout(prev => ({
-            ...prev,
-            ...data
-        }));
-    };*/
+
     const updateDockWidth = (side:string, width:number) => {
-        console.log("updatingDockWidth: hello?", width);
 
         const dockCopy = {...dockLayout};
         if(side=="right"){
@@ -205,10 +204,10 @@ export default function WindowManager({
 
     
     const closeWindow = (id:string) => {
-        console.log("closing?...");
+        //console.log("closing?...");
         const el = containerRef.current?.querySelector(`[data-flip-id="${id}"]`);
         if(!el) return;
-        console.log("yes: ", el);
+        //console.log("yes: ", el);
 
         gsap.to(el, {
             opacity:0,
@@ -222,7 +221,7 @@ export default function WindowManager({
     }
 
 
-    const dockWindow = (id:string, side: "left"|"right", rowIndex?:number) => {
+    const dockWindow = (id:string, side: "left"|"right", y:number) => {
         const el = document.querySelector(`[data-window-id="${id}"]`);
         if (el) {
             gsap.set(el, { clearProps: "transform" });
@@ -230,37 +229,36 @@ export default function WindowManager({
         setWindows(prev =>
             prev.map(w =>
                 w.id ===id
-                ? {...w, mode: "docked", dockSide:side}
+                ? {...w, 
+                    mode: "docked", 
+                    dockSide:side
+                }
                 : w
-            )
-        );
-
-        console.log()
+        ));
 
         setDockLayout(prev => {
             const column = prev[side];
-
-            const exists = column.some(row => row.includes(id));
+            const insertRowIndex = Math.floor((y/window.innerHeight)*column.length+0.5);//0.5 works for some reason
+            const exists = column.some(row => row.id === id);
             if (exists) return prev;
+            const newRow = {id, size:1};
 
-            if(rowIndex !== undefined) { //insert to specific row
-                const newColumn = [...column];
-                newColumn.splice(rowIndex, 0, [id]);
-                return {...prev, [side]:newColumn};
-            }
-
-            //default - add new row
-            return {...prev, [side]: [...column, [id]]};
+            const newColumn = [...column];
+            newColumn.splice(insertRowIndex, 0, newRow);
+            return {...prev, [side]:normalizeColumn(newColumn)};
         });
-    }
+    };
+
+    const normalizeColumn = (column: Row[]): Row[] => {
+        const size = 1/column.length;
+        return column.map(row=> ({
+            ...row,
+            size
+        }));
+    };
 
 
-    const undockWindow = (id: string, x: number, y: number) => {
-        const el = document.querySelector(`[data-window-id="${id}"]`);
-        if (el) {
-            gsap.set(el, { clearProps: "all" }); // optional reset
-        }
-        
+    const undockWindow = (id: string, y: number) => {
         setWindows(prev =>
             prev.map(w =>
             w.id === id
@@ -268,19 +266,15 @@ export default function WindowManager({
                     ...w,
                     mode: "floating",
                     dockSide: undefined,
-                    x,
                     y
                 }
                 : w
             )
         );
-
-        //console.log("undocking: ", windows);
-
         setDockLayout(prev => ({
             ...prev,
-            left: prev.left.map(r => r.filter(w => w !== id)).filter(r => r.length),
-            right: prev.right.map(r => r.filter(w => w !== id)).filter(r => r.length),
+            left: normalizeColumn(prev.left.filter(row => row.id !== id)),
+            right: normalizeColumn(prev.right.filter(row => row.id !== id)),
         }));
     };
 
@@ -298,16 +292,9 @@ export default function WindowManager({
     const handleDragEnd = (id: string, x: number, y: number) => {
         
         const side = detectDock(x);
-        console.log(x);
 
         if (side) {
-            dockWindow(id, side);
-        } else {
-            // if it was docked before → undock
-            const win = windows.find(w => w.id === id);
-            if (win?.mode === "docked") {
-            undockWindow(id, x, y);
-            }
+            dockWindow(id, side, y);
         }
     };
     
@@ -328,6 +315,7 @@ export default function WindowManager({
             handleDragEnd={handleDragEnd}
             renderWindowContent={renderWindowContent}
             updateDockWidth={updateDockWidth}
+            undockWindow={undockWindow}
         />
 
         
@@ -342,11 +330,11 @@ export default function WindowManager({
                     <SubWindow
                     key={win.id}
                     win={win}
-                    docked={false}
                     bringToFront={bringToFront}
                     updateWindow={updateWindow}
                     onClose={closeWindow}
                     handleDragEnd={handleDragEnd}
+                    undockWindow={undockWindow}
                     >
 
                         {renderWindowContent(win.type)}

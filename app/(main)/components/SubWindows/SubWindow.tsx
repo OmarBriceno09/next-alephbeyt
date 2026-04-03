@@ -12,74 +12,96 @@
 */
 "use client";
 
-import { useRef } from "react"
+import { useRef, useState } from "react"
 import { WindowData } from "../WindowManager"
 import gsap from "gsap"
 
 type SubWindowProps = {
   win: WindowData
-  docked: boolean
   bringToFront: (id: string) => void
   updateWindow: (id: string, data: Partial<WindowData>) => void
   onClose: (id: string) => void
   handleDragEnd: (id: string, x: number, y: number) => void
+  undockWindow: (id: string, y: number) => void
   children: React.ReactNode
 }
 
 export default function SubWindow({
   win,
-  docked,
   bringToFront,
   updateWindow,
   onClose,
   handleDragEnd,
+  undockWindow,
   children
 }:SubWindowProps){
 
   const ref = useRef<HTMLDivElement>(null);
-  const isDocked = docked ?? (win.mode === "docked");
+  //const isDocked = useRef<boolean>(false);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
 
-  const startDrag = (e:React.MouseEvent) => {
+  /*useEffect(() => {
+    if(win.mode == "docked" && !isDocked.current){
+      console.log("set to docked");
+      isDocked.current = true;
+    }
+  }, [win]);*/
 
-    bringToFront(win.id);
-    // disable text selection
-    document.body.classList.add("dragging");
 
+  //call this to check if window needs to be undocked
+  const startDrag = (e: React.MouseEvent) => {
     const startX = e.clientX;
     const startY = e.clientY;
+    if (win.mode === "docked")
+      undockWindow(win.id, startY-10); //startY-10- estimate for middle of header
 
-    const startLeft = win.x;
-    const startTop = win.y;
+    requestAnimationFrame(() => {
+      const el = document.querySelector(
+        `[data-flip-id="${win.id}"]`
+      ) as HTMLElement;
+      if (!el) return;
 
-    const el = ref.current;
-    if(!el) return;
+      beginDrag(e, el, startX, startY);
+    });
+  }
 
+
+  const beginDrag = (e:React.MouseEvent, el:HTMLElement, startX: number, startY: number) => {
+
+    setIsDragging(true);
+    bringToFront(win.id);
+    document.body.classList.add("dragging");
+
+    const rect = el.getBoundingClientRect();
+    const startLeft = rect.left;
+    const startTop = rect.top;
+    
     const move = (ev:MouseEvent) => {
-
       const dx = ev.clientX - startX;
       const dy = ev.clientY - startY;
 
       const x = Math.min(Math.max(startLeft + dx, 0), window.innerWidth-win.width);
       const y = Math.min(Math.max(startTop + dy, 0), window.innerHeight-100); //I will allow window hiding below
-
-      gsap.set(el,{
-        x: x,
-        y: y
-      });
+      
+      gsap.set(el,{ x: x, y: y });
     }
 
     const up = (ev:MouseEvent) => {
       //restoring text selection
+      //console.log("after: ", el);
+      setIsDragging(false);
       document.body.classList.remove("dragging");
 
       const dx = ev.clientX - startX;
       const dy = ev.clientY - startY;
 
-      updateWindow(win.id,{
-        x: Math.min(Math.max(startLeft + dx, 0), window.innerWidth-win.width),
-        y: Math.min(Math.max(startTop + dy, 0), window.innerHeight-100)
-      });
+      const finalX = Math.min(Math.max(startLeft + dx, 0), window.innerWidth-win.width);
+      const finalY = Math.min(Math.max(startTop + dy, 0), window.innerHeight-100);
 
+      /*const partialData : Partial<WindowData> = (win.mode === "docked") 
+        ? {mode: "floating", dockSide: undefined, x:finalX, y:finalY}
+        : { x: finalX, y: finalY }*/
+      updateWindow(win.id, { x: finalX, y: finalY });
       handleDragEnd(win.id, ev.clientX, ev.clientY);
 
       window.removeEventListener("mousemove",move);
@@ -170,13 +192,15 @@ export default function SubWindow({
     window.addEventListener("mouseup",up);
   }
 
+  //console.log("isDragging: ", isDragging);
+
   return (
     <div
       ref={ref}
       data-flip-id={win.id}
-      className={`shadow-xl flex flex-col pointer-events-auto subWindow ${isDocked ? "docked" : "floating"}`}
+      className={`shadow-xl flex flex-col pointer-events-auto subWindow ${win.mode === "docked" && !isDragging ? "docked" : "floating"}`}
       style={
-        isDocked
+        win.mode === "docked" && !isDragging
         ? {
           width: "100%",
           height: "100%",
@@ -188,7 +212,6 @@ export default function SubWindow({
           position:"absolute",
           zIndex: win.z
       }}
-      onMouseDown={() => bringToFront(win.id)}
     >
 
       {/*Header (drag handle)*/}
@@ -207,7 +230,7 @@ export default function SubWindow({
       </div>
 
       {/*Resize Handles*/}
-      {(!isDocked) ?(
+      {(win.mode === "floating") ?(
           <>
             <div className="resize n" onMouseDown={(e)=>startResize(e,"n")} />
             <div className="resize s" onMouseDown={(e)=>startResize(e,"s")} />

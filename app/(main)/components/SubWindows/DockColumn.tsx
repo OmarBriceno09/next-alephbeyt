@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react"
-import { WindowData } from "../WindowManager"
+import { WindowData, Row } from "../WindowManager"
 import DockRow from "./DockRow"
 import gsap from "gsap"
 
@@ -7,7 +7,7 @@ import gsap from "gsap"
 interface DockColumnProps {
     side: string,
     width: number,
-    rows: string[][], 
+    rows: Row[], 
     windows: WindowData[]
     bringToFront: (id: string) => void
     updateWindow: (id: string, data: Partial<WindowData>) => void
@@ -17,9 +17,10 @@ interface DockColumnProps {
     updateDockWidth: (side:string, width:number) => void
     updateGsapCenterWidth: (side:string, colWidth:number) => void
     animateGsapCenterWidth:  (side:string, colWidth:number, durartion: number) => void
+    undockWindow: (id: string, y: number) => void
 };
 
-const MinWidth = 300;
+const MinWidth = 400;
 
 /**TODO: So the biggest issue in my code was the fact that I scaled the middle piece to an
  * enourmosuly large amount, that is why my side docks weren't scaling correctly. Now the bigger
@@ -39,7 +40,8 @@ export default function DockColumn({
     renderWindowContent,
     updateDockWidth,
     updateGsapCenterWidth,
-    animateGsapCenterWidth
+    animateGsapCenterWidth,
+    undockWindow
 }:DockColumnProps) {
 
     const ref = useRef<HTMLDivElement>(null);
@@ -51,9 +53,15 @@ export default function DockColumn({
         if(width>0 && rows.length==0){
             animateOpenClose("close", 0.2);
         }
+        //close will be handled by the last row
     }, [width, rows]);
 
 
+    /**Open the Column when:
+     *  A row has been added
+     * Close when:
+     *  last row is "moved"
+     */
     const animateOpenClose = (state: "open"|"close", duration: number) => {
         const toVal = (state=="open") ? MinWidth : 0;
         const el = ref.current;
@@ -129,14 +137,16 @@ export default function DockColumn({
             {rows.map((row, i) => (
                 <DockRow 
                 key={i} 
-                row={row} 
-                numrows={rows.length}
+                row={row}
+                //numrows={rows.length} 
                 windows={windows} 
                 bringToFront={bringToFront}
                 updateWindow={updateWindow}
                 onClose={onClose}
                 handleDragEnd={handleDragEnd}
                 renderWindowContent={renderWindowContent}
+                undockWindow={undockWindow}
+                animOpenCloseCol={animateOpenClose}
                 />
             ))}
             {side=="right" ? (

@@ -18,6 +18,7 @@ interface DockRendererProps {
     handleDragEnd: (id: string, x: number, y: number) => void
     renderWindowContent: (type: string) => React.ReactNode
     updateDockWidth: (side:string, width:number) => void
+    undockWindow: (id: string, y: number) => void
 };
 
 export default function DockRenderer({
@@ -31,6 +32,7 @@ export default function DockRenderer({
     handleDragEnd,
     renderWindowContent,
     updateDockWidth,
+    undockWindow
 }:DockRendererProps) {
   
   const mtRef = useRef<HTMLDivElement>(null);
@@ -89,6 +91,7 @@ export default function DockRenderer({
           updateDockWidth={updateDockWidth}
           updateGsapCenterWidth={updateGsapCenterWidth}
           animateGsapCenterWidth={animateGsapCenterWidth}
+          undockWindow={undockWindow}
         />
 
       {/* CENTER (MapTree) */}
@@ -121,6 +124,7 @@ export default function DockRenderer({
         updateDockWidth={updateDockWidth}
         updateGsapCenterWidth={updateGsapCenterWidth}
         animateGsapCenterWidth={animateGsapCenterWidth}
+        undockWindow={undockWindow}
       />
     </>
   );
