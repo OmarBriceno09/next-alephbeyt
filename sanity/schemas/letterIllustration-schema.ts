@@ -1,7 +1,7 @@
 const letterIllustration = {
     name: 'letterIllustration',
     title: 'Letter Illustration',
-    type: 'object',
+    type: 'document',
     fields: [
         { name: 'illustration_name', title: 'Illustration Name', type: 'string' },
         { name: 'order_index', title:'Order Index', type:'number',},
