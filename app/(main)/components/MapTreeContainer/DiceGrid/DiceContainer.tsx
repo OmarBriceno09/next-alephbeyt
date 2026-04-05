@@ -4,6 +4,7 @@ import gsap from "gsap";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import LetterModal, { LetterModalHandle } from "./LetterModal/LetterModal";
 import LetterCube from "./LetterCube";
+import { LetterIllustration } from "@/types/LetterIllustration";
 
 
 enum Faces{
@@ -55,6 +56,7 @@ const DIECONTAINERSCALE = 0.07; // this number has to match to "--cube-size: 7cq
 interface DiceContainerProps {
     scripts: Script [],
     inTreeView: boolean,
+    letterIllustrations: LetterIllustration[]
     LETTERMODALPERCENTSIZEWIDTH: number,
     ENTERROTATIONTIME: number,
     SWITCHROTTIME: number,
@@ -78,6 +80,7 @@ const DiceContainer = forwardRef<DiceContainerHandle, DiceContainerProps>(
         {
             scripts,
             inTreeView,
+            letterIllustrations,
             LETTERMODALPERCENTSIZEWIDTH, 
             ENTERROTATIONTIME,
             SWITCHROTTIME,
@@ -752,7 +755,8 @@ const DiceContainer = forwardRef<DiceContainerHandle, DiceContainerProps>(
                 <div className="absolute inset-0">
                     <LetterModal
                         ref={LetterModalRef}
-                        scripts={scripts} 
+                        scripts={scripts}
+                        letterIllustrations={letterIllustrations} 
                         modalDimensions = {letterModalDimensions}
                         onClose = {handleOnCloseLetter}
                         scriptChange = {scriptChange}

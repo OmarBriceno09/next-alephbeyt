@@ -1,11 +1,13 @@
 import { Script } from "@/types/Script";
 import { MapTreeNode } from "@/types/MapTreeNode";
 import { createClient, groq } from "next-sanity";
+import { LetterIllustration } from "@/types/LetterIllustration";
 
 export async function getAlephBeytData(): 
 Promise<{
     scripts:Script[], 
-    mapTreeNodes:MapTreeNode[]
+    mapTreeNodes:MapTreeNode[],
+    letterIllustrations: LetterIllustration[]
 }>{
     const client = createClient({
         projectId: "ae4t7yny",
@@ -85,12 +87,28 @@ Promise<{
         }`
     );
 
+    const letterIllustrations = await client.fetch(
+        groq`*[_type == "letterIllustration"] | order(order_index asc){
+            _id,
+            _createdAt,
+            illustration_name,
+            order_index,
+            foreground_img{
+                asset->{
+                    _id,
+                    url
+                }
+            },
+        }`
+    );
+
 
     return new Promise((resolve) => {
         setTimeout(() =>{
             const fetchedData = {
                 scripts:scripts, 
-                mapTreeNodes:mapTreeNodes
+                mapTreeNodes:mapTreeNodes,
+                letterIllustrations:letterIllustrations,
             };
             resolve(fetchedData);
         }, 1000);

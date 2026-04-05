@@ -12,9 +12,11 @@ import { ModalDimensions, LetterDisplay, createEmptyLetterDisplay} from '@/types
 import ModalBlockList, { ModalBlockListHandle } from "./ModalBlockList";
 import { Letter } from "@/types/Letter";
 import LetterBoxSwapDisplay from "./LetterBoxSwapDisplay";
+import { LetterIllustration } from "@/types/LetterIllustration";
 
 interface ModalProps {
   scripts: Script [],
+  letterIllustrations: LetterIllustration[],
   modalDimensions: React.RefObject<ModalDimensions>,
   onClose: (switchingLetter:boolean) => void;
   scriptChange: (newScriptIndex: number) => void;
@@ -32,6 +34,7 @@ const LetterModal = forwardRef<LetterModalHandle, ModalProps>(
   function LetterModal(
     {
       scripts,
+      letterIllustrations,
       modalDimensions,
       onClose,
       scriptChange
@@ -47,6 +50,8 @@ const LetterModal = forwardRef<LetterModalHandle, ModalProps>(
     const [letterDisplayList, setLetterDisplayList] = useState<LetterDisplay[]>([]);
     const [selectedScriptIndex, setSelectedSciptIndex] = useState<number>(-1);
     const [letterIndex, setLetterIndex] = useState<number>(-1);
+    
+    const [foregroundImgUrl, setForegroundImgUrl] = useState<string>("");
 
     const prevLetter = useRef<Letter | null> (null);
 
@@ -218,6 +223,12 @@ const LetterModal = forwardRef<LetterModalHandle, ModalProps>(
     //This function will declare all the illustrations and images right before isOpen is activated
     const declareLetterMeta = async (newIndex: number) =>{
       setLetterIndex(newIndex);
+
+      const foreground_img = letterIllustrations[newIndex].foreground_img;
+      const fg_asset = (foreground_img) ? foreground_img.asset : null;
+      const letterIllusUrl = (fg_asset) ? fg_asset.url : "";
+      setForegroundImgUrl(letterIllusUrl);
+
       
       const letterList: React.SetStateAction<LetterDisplay[]> = [];
       scripts.forEach(sp => {
@@ -257,7 +268,6 @@ const LetterModal = forwardRef<LetterModalHandle, ModalProps>(
           <div 
             className="ModalHeader relative"
           >
-            
             <div className="flex flex-row w-full">
               {/*Letter Left Display*/}
               <LetterBoxSwapDisplay
@@ -312,7 +322,26 @@ const LetterModal = forwardRef<LetterModalHandle, ModalProps>(
       );
     }
 
+    //modal illustration with foreground motion
+    const ModalIllustration = () => {
+      if(foregroundImgUrl == "")
+        return null;
+      else{
+        return(
+          <div className="absolute inset-0 -z-10 flex flex-col overflow-hidden">
+            <img
+              src={foregroundImgUrl}
+              className="mt-auto"
+              style={{
+                minWidth: modalDimensions.current.end_width,
+              }}
+            />
+          </div>
+        );
+      }
+    }
 
+    
     return (
       <div 
         ref = {modalRef}
@@ -323,11 +352,12 @@ const LetterModal = forwardRef<LetterModalHandle, ModalProps>(
           style={{ 
               opacity: letterIndex > -1 ? 1 : 0,
               pointerEvents: 'none', 
-              //backgroundColor: letterColor || "#f5f5f5"
+              //backgroundColor: letterColor || "#4d4141"
             }}
         >
+
+          {ModalIllustration()}
           {ModalHeader()}
-          
           {ModalBody()}
 
           <div className="shrink-0 flex justify-end p-4">

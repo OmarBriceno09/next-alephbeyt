@@ -10,6 +10,7 @@ import gsap from "gsap";
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
 import DiceContainer, { DiceContainerHandle } from "./DiceGrid/DiceContainer";
 import { Script } from "@/types/Script";
+import { LetterIllustration } from "@/types/LetterIllustration";
 
 
 const LETTERMODALPERCENTSIZEWIDTH = 0.65; 
@@ -50,6 +51,7 @@ interface MapTreeProps {
     selectedScriptIndex: number,
     inTreeView: boolean,
     scriptMapTreeNodes: ScriptMapTreeNode[],
+    letterIllustrations: LetterIllustration[],
     scriptChange: (newScriptIndex: number) => void;
     onSwitchTreeView: (toTreeView: boolean) => void;
 };
@@ -69,6 +71,7 @@ const MapTree = forwardRef<MapTreeHandle, MapTreeProps>(
             inTreeView,
             selectedScriptIndex,
             scriptMapTreeNodes,
+            letterIllustrations,
             scriptChange,
             onSwitchTreeView,
         },
@@ -594,6 +597,7 @@ const MapTree = forwardRef<MapTreeHandle, MapTreeProps>(
                         ref={DiceContainerRefHandle}
                         inTreeView = {inTreeView}
                         scripts = {scripts}
+                        letterIllustrations={letterIllustrations}
                         LETTERMODALPERCENTSIZEWIDTH = {LETTERMODALPERCENTSIZEWIDTH}
                         ENTERROTATIONTIME = {ENTERROTATIONTIME}
                         SWITCHROTTIME = {SWITCHROTTIME}

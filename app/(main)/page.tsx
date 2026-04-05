@@ -17,6 +17,7 @@ export default async function Home() {
       <WindowManager
         scripts={fetchedData.scripts}
         mapTreeNodes={fetchedData.mapTreeNodes}
+        letterIllustrations={fetchedData.letterIllustrations}
       />
     </div>
   );

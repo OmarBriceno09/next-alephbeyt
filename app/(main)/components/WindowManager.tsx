@@ -11,6 +11,7 @@ import { Script } from "@/types/Script";
 import ScriptComparison from "./SubWindows/ScriptComparison";
 import { MapTreeNode } from "@/types/MapTreeNode";
 import DockRenderer from "./SubWindows/DockRenderer";
+import { LetterIllustration } from "@/types/LetterIllustration";
 
 
 gsap.registerPlugin(Flip);
@@ -49,12 +50,14 @@ export type DockLayout = {
 
 type WindowManagerProps = {
     scripts: Script [],
-    mapTreeNodes: MapTreeNode[]
+    mapTreeNodes: MapTreeNode[],
+    letterIllustrations: LetterIllustration[]
 }
 
 export default function WindowManager({
     scripts,
-    mapTreeNodes
+    mapTreeNodes,
+    letterIllustrations
 }:WindowManagerProps) {
 
     const containerRef = useRef<HTMLDivElement>(null);
@@ -309,6 +312,7 @@ export default function WindowManager({
             layout={dockLayout}
             scripts={scripts}
             mapTreeNodes={mapTreeNodes}
+            letterIllustrations={letterIllustrations}
             bringToFront={bringToFront}
             updateWindow={updateWindow}
             onClose={closeWindow}

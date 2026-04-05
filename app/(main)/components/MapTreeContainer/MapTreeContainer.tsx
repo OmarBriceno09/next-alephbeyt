@@ -7,6 +7,7 @@ import SelectedScriptTitle, { SelectedScriptTitleHandle } from './SelectedScript
 import { MapTreeNode } from '@/types/MapTreeNode';
 import { ScriptMapTreeNode } from '@/types/ScriptMapTreeNode';
 import MapTree, { MapTreeHandle } from './MapTree';
+import { LetterIllustration } from '@/types/LetterIllustration';
 
 const SWITCHROTTIME = 0.5;
 
@@ -39,6 +40,7 @@ function stringToMapEdge( pointsTo: string, mapTreeLength: number): number[] {
 interface MapTreeContainerProps {
     scripts:Script[], 
     mapTreeNodes: MapTreeNode[],
+    letterIllustrations: LetterIllustration[],
     windowWidth: number
 }
 
@@ -53,6 +55,7 @@ const MapTreeContainer = forwardRef<MapTreeContainerHanlde, MapTreeContainerProp
         {
             scripts, 
             mapTreeNodes,
+            letterIllustrations,
             windowWidth,
         },
         ref
@@ -196,6 +199,7 @@ const MapTreeContainer = forwardRef<MapTreeContainerHanlde, MapTreeContainerProp
                     selectedScriptIndex = {selectedScriptIndex}
                     scripts={scripts}
                     scriptMapTreeNodes={scriptMapTreeNodes}
+                    letterIllustrations={letterIllustrations}
                     scriptChange = {handleScriptChange}
                     onSwitchTreeView={handleSwitchToScriptTreeView}
                 />}

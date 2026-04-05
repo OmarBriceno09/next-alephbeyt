@@ -6,19 +6,21 @@ import { MapTreeNode } from '@/types/MapTreeNode';
 import DockColumn from "./DockColumn";
 import { useRef } from "react";
 import gsap from "gsap"
+import { LetterIllustration } from "@/types/LetterIllustration";
 
 interface DockRendererProps {
     windows: WindowData[],
     layout: DockLayout,
     scripts: Script[], 
-    mapTreeNodes: MapTreeNode[]
-    bringToFront: (id: string) => void
-    updateWindow: (id: string, data: Partial<WindowData>) => void
-    onClose: (id: string) => void
-    handleDragEnd: (id: string, x: number, y: number) => void
-    renderWindowContent: (type: string) => React.ReactNode
-    updateDockWidth: (side:string, width:number) => void
-    undockWindow: (id: string, y: number) => void
+    mapTreeNodes: MapTreeNode[],
+    letterIllustrations: LetterIllustration[]
+    bringToFront: (id: string) => void;
+    updateWindow: (id: string, data: Partial<WindowData>) => void;
+    onClose: (id: string) => void;
+    handleDragEnd: (id: string, x: number, y: number) => void;
+    renderWindowContent: (type: string) => React.ReactNode;
+    updateDockWidth: (side:string, width:number) => void;
+    undockWindow: (id: string, y: number) => void;
 };
 
 export default function DockRenderer({
@@ -26,6 +28,7 @@ export default function DockRenderer({
     layout,
     scripts,
     mapTreeNodes,
+    letterIllustrations,
     bringToFront,
     updateWindow,
     onClose,
@@ -106,6 +109,7 @@ export default function DockRenderer({
             ref={MapTreeContainerRefHandle}
             scripts={scripts}
             mapTreeNodes={mapTreeNodes}
+            letterIllustrations={letterIllustrations}
             windowWidth={centerWidth}
         />
       </div>
