@@ -20,7 +20,7 @@ type SubWindowProps = {
   win: WindowData
   bringToFront: (id: string) => void
   updateWindow: (id: string, data: Partial<WindowData>) => void
-  onClose: (id: string) => void
+  onClose: (id: string, mode:string) => void
   handleDragEnd: (id: string, x: number, y: number) => void
   undockWindow: (id: string, y: number) => void
   children: React.ReactNode
@@ -216,12 +216,15 @@ export default function SubWindow({
 
       {/*Header (drag handle)*/}
       <div
-        className="windowHeader bg-gray-200 cursor-move select-none"
-        onMouseDown={startDrag}
+        className="windowHeader bg-gray-200 select-none"
       >
-        {win.label}
-
-        <button className="subWinBtn" onClick={() => onClose(win.id)}>✕</button>
+        <div 
+          className="cursor-move w-full"
+          onMouseDown={startDrag}
+        >
+          {win.label}
+        </div>
+        <button className="subWinBtn" onClick={() =>onClose(win.id, win.mode)}>✕</button>
       </div>
 
       {/*Content*/}

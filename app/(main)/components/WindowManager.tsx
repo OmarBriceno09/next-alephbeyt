@@ -12,6 +12,7 @@ import ScriptComparison from "./SubWindows/ScriptComparison";
 import { MapTreeNode } from "@/types/MapTreeNode";
 import DockRenderer from "./SubWindows/DockRenderer";
 import { LetterIllustration } from "@/types/LetterIllustration";
+import AlephGitTester from "./SubWindows/AlephGitTester";
 
 
 gsap.registerPlugin(Flip);
@@ -51,13 +52,15 @@ export type DockLayout = {
 type WindowManagerProps = {
     scripts: Script [],
     mapTreeNodes: MapTreeNode[],
-    letterIllustrations: LetterIllustration[]
+    letterIllustrations: LetterIllustration[],
+    testGitMarkdown: string,
 }
 
 export default function WindowManager({
     scripts,
     mapTreeNodes,
-    letterIllustrations
+    letterIllustrations,
+    testGitMarkdown
 }:WindowManagerProps) {
 
     const containerRef = useRef<HTMLDivElement>(null);
@@ -95,9 +98,7 @@ export default function WindowManager({
                 return(<ScriptComparison scripts={scripts}/>);
             
             case "map":
-                return(<div>
-                    <h1>embedded map should go here.</h1>
-                </div>);
+                return(<AlephGitTester testGitMarkdown={testGitMarkdown}/>);
 
             case "conjugate":
                 return(
@@ -206,11 +207,9 @@ export default function WindowManager({
     }
 
     
-    const closeWindow = (id:string) => {
-        //console.log("closing?...");
+    const closeWindow = (id:string, mode: string) => {
         const el = containerRef.current?.querySelector(`[data-flip-id="${id}"]`);
         if(!el) return;
-        //console.log("yes: ", el);
 
         gsap.to(el, {
             opacity:0,
@@ -218,7 +217,11 @@ export default function WindowManager({
             duration:0.2,
             ease:"power2.inOut",
             onComplete:()=>{
-                setWindows(prev => prev.filter(w=>w.id!==id));
+                setWindows(prev => {
+                    if(mode === "docked")
+                        undockWindow(id, 0);
+                    return prev.filter(w=>w.id!==id);
+                });
             }
         });
     }
@@ -304,6 +307,7 @@ export default function WindowManager({
 
     return (
     <div 
+        ref={containerRef}
         className="w-full h-full flex"
     >
 
@@ -324,7 +328,6 @@ export default function WindowManager({
 
         
         <div 
-            ref={containerRef}
             className="fixed inset-0 pointer-events-none z-10"
         >
             {windows

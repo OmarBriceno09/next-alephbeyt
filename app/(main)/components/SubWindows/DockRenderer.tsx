@@ -16,7 +16,7 @@ interface DockRendererProps {
     letterIllustrations: LetterIllustration[]
     bringToFront: (id: string) => void;
     updateWindow: (id: string, data: Partial<WindowData>) => void;
-    onClose: (id: string) => void;
+    onClose: (id: string, mode:string) => void;
     handleDragEnd: (id: string, x: number, y: number) => void;
     renderWindowContent: (type: string) => React.ReactNode;
     updateDockWidth: (side:string, width:number) => void;
