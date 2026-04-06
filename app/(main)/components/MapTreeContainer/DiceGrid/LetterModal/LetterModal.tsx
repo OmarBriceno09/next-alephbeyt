@@ -262,7 +262,7 @@ const LetterModal = forwardRef<LetterModalHandle, ModalProps>(
       declareLetterMeta
     }));
 
-
+    //Modal header with carousel
     const ModalHeader = () => {
       return(
           <div 
