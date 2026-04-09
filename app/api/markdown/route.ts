@@ -41,7 +41,13 @@ export async function GET(req: Request) {
         },
         });
 
-    } catch (err) {
+    } catch (err: unknown) {
+        if (err instanceof Error) {
+            console.error(err.message);
+        } else {
+            console.error("Unknown error:", err);
+        }
+
         return new Response("Server error", { status: 500 });
     }
 }
